@@ -1,45 +1,73 @@
-/* Contenedor principal */
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 1100px;
-  margin: 20px auto;
-  padding: 0 10px;
-  font-family: Arial, sans-serif;
-}
-
-/* Tarjetas */
-.card {
-  background-color: #fff;
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", sans-serif;
 }
 
-/* Tarjetas específicas */
-.profile-card, .actions-card, .map-container, .admin-card {
-  width: 100%;
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  padding: 20px;
+  max-width: 700px;
+}
+
+.profile-card {
+  background: #f0f8ff;
 }
 
 .actions-card {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+  background: #f7fbff;
+  text-align: center;
 }
 
-.actions-card .btn {
-  flex: 1;
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
-/* Mapa */
-.map-container {
-  height: 550px;
-  display: flex;
-  flex-direction: column;
+.btn-blue {
+  background: #007bff;
+  color: white;
+}
+.btn-blue:hover {
+  background: #0056b3;
 }
 
-/* Tabla de usuarios */
+.btn-green {
+  background: #28a745;
+  color: white;
+}
+.btn-green:hover {
+  background: #1e7e34;
+}
+
+.btn-red {
+  background: #dc3545;
+  color: white;
+}
+.btn-red:hover {
+  background: #b02a37;
+}
+
+.btn-yellow {
+  background: #ffc107;
+  color: black;
+}
+.btn-yellow:hover {
+  background: #e0a800;
+}
+
+.btn-gray {
+  background: #6c757d;
+  color: white;
+}
+
 .table-container {
   overflow-x: auto;
 }
@@ -49,46 +77,31 @@
   border-collapse: collapse;
 }
 
-.users-table th, .users-table td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.users-table th {
-  background-color: #f5f5f5;
-  text-align: left;
-}
-
-/* Botones */
-.btn {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.btn-red { background-color: #f87171; color: #fff; }
-.btn-red:hover { background-color: #ef4444; }
-
-.btn-blue { background-color: #60a5fa; color: #fff; }
-.btn-blue:hover { background-color: #3b82f6; }
-
-.btn-green { background-color: #34d399; color: #fff; }
-.btn-green:hover { background-color: #10b981; }
-
-.btn-yellow { background-color: #facc15; color: #111; }
-.btn-yellow:hover { background-color: #eab308; }
-
-.btn-gray { background-color: #d1d5db; color: #111; }
-.btn-gray:hover { background-color: #9ca3af; }
-
-/* Cargando */
-.loading {
+.users-table th,
+.users-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
   text-align: center;
-  font-size: 1.2em;
-  margin-top: 50px;
+}
+
+.msg {
+  color: green;
+  text-align: center;
+}
+
+.center {
+  text-align: center;
+}
+
+/* 🔵 Mapa sin estilos que lo limiten */
+.map-wrapper {
+  margin-top: 20px;
+  width: 100%;
+  height: 100%;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
 }
 
 /* Modal */
@@ -98,52 +111,28 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 1000;
+  align-items: center;
+  z-index: 999;
 }
 
 .modal-content {
-  background: #fff;
-  padding: 25px;
+  background: white;
   border-radius: 12px;
+  padding: 25px;
   width: 400px;
-  max-width: 90%;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal h4 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.2em;
-  text-align: center;
-}
-
-.edit-form input,
-.edit-form select {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  font-size: 1em;
 }
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 15px;
-  gap: 10px;
 }
 
-.msg {
-  color: green;
-  margin-bottom: 10px;
+.loading {
   text-align: center;
+  padding: 50px;
+  font-size: 20px;
 }

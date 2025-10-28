@@ -117,14 +117,18 @@ export default function UserPanel() {
     <div className="container">
       {/* 🟢 Tarjeta de perfil */}
       {user && (
-        <center><div className="card profile-card">
-          <h2>Bienvenido<br></br>
-            {user.first_name} {user.last_name}</h2>
-          <p>Rol: {user.role}</p>
-          <button className="btn btn-red" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
-        </div></center>
+        <center>
+          <div className="card profile-card">
+            <h2>
+              Bienvenido <br />
+              {user.first_name} {user.last_name}
+            </h2>
+            <p>Rol: {user.role}</p>
+            <button className="btn btn-red" onClick={handleLogout}>
+              Cerrar sesión
+            </button>
+          </div>
+        </center>
       )}
 
       {/* 🔵 Acciones para roles no admin */}
@@ -139,9 +143,9 @@ export default function UserPanel() {
         </div>
       )}
 
-      {/* 🌍 Mapa para roles no admin */}
+      {/* 🌍 Mapa sin estilos adicionales */}
       {user?.role !== "admin" && (
-        <div className="card map-container">
+        <div className="map-wrapper">
           <UserMapDashboard />
         </div>
       )}
@@ -172,13 +176,25 @@ export default function UserPanel() {
                 )}
                 {users.map((u) => (
                   <tr key={u._id}>
-                    <td>{u.first_name} {u.last_name}</td>
+                    <td>
+                      {u.first_name} {u.last_name}
+                    </td>
                     <td>{u.email}</td>
                     <td>{u.role}</td>
                     <td>{u.phone}</td>
                     <td>
-                      <button className="btn btn-yellow" onClick={() => openEdit(u)}>Editar</button>
-                      <button className="btn btn-red" onClick={() => handleDelete(u._id)}>Eliminar</button>
+                      <button
+                        className="btn btn-yellow"
+                        onClick={() => openEdit(u)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-red"
+                        onClick={() => handleDelete(u._id)}
+                      >
+                        Eliminar
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -194,20 +210,58 @@ export default function UserPanel() {
           <div className="modal-content">
             <h4>Editar usuario: {editingUser.email}</h4>
             <form onSubmit={handleUpdate} className="edit-form">
-              <input name="first_name" value={form.first_name} onChange={handleChange} placeholder="Nombre" required />
-              <input name="last_name" value={form.last_name} onChange={handleChange} placeholder="Apellido" required />
-              <input name="email" value={form.email} onChange={handleChange} placeholder="Email" type="email" required />
-              <input name="phone" value={form.phone} onChange={handleChange} placeholder="Teléfono" />
+              <input
+                name="first_name"
+                value={form.first_name}
+                onChange={handleChange}
+                placeholder="Nombre"
+                required
+              />
+              <input
+                name="last_name"
+                value={form.last_name}
+                onChange={handleChange}
+                placeholder="Apellido"
+                required
+              />
+              <input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+                type="email"
+                required
+              />
+              <input
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="Teléfono"
+              />
               <select name="role" value={form.role} onChange={handleChange}>
                 <option value="productor">Productor</option>
                 <option value="vendedor">Vendedor</option>
                 <option value="inversionista">Inversionista</option>
                 <option value="admin">Administrador</option>
               </select>
-              <input name="password" value={form.password} onChange={handleChange} placeholder="Contraseña (dejar vacío para no cambiar)" type="password" />
+              <input
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="Contraseña (dejar vacío para no cambiar)"
+                type="password"
+              />
               <div className="modal-actions">
-                <button type="submit" className="btn btn-blue">Actualizar</button>
-                <button type="button" className="btn btn-gray" onClick={() => setShowEdit(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-blue">
+                  Actualizar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-gray"
+                  onClick={() => setShowEdit(false)}
+                >
+                  Cancelar
+                </button>
               </div>
             </form>
           </div>

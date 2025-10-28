@@ -1,0 +1,19 @@
+// src/components/LegendPanel.jsx
+import React from "react";
+import "../styles/UserMapDashboard.css";
+
+export default function LegendPanel({ selectedLayer }) {
+  const legends = {
+    temp: "🌡 Muestra la temperatura global en °C",
+    precipitation: "☔ Indica la intensidad de lluvia y nieve",
+    clouds: "☁️ Cubre la densidad de nubosidad",
+    wind: "💨 Dirección e intensidad del viento",
+  };
+
+  return (
+    <div className="legend-panel">
+      <h4>Leyenda</h4>
+      <p>{legends[selectedLayer]}</p>
+    </div>
+  );
+}

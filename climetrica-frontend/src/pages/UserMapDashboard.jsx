@@ -1,56 +1,136 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip, LayersControl } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import "../styles/UserMapDashboard.css";
 
-const { BaseLayer, Overlay } = LayersControl;
+// 🔑 API key de OpenWeatherMap (ya integrada)
+const apiKey = "d2f1e6e2af677293a7fc4e832214a09c";
+
+// Icono personalizado
+const userIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/64/64113.png",
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+  popupAnchor: [0, -30],
+});
 
 export default function UserMapDashboard() {
-  const [climateData, setClimateData] = useState({
-    temperature: [],
-    precipitation: [],
-    soil_moisture: [],
-    drought: [],
+  const [data, setData] = useState([]);
+  const [activeLayers, setActiveLayers] = useState({
+    temp: true,
+    precipitation: false,
+    clouds: false,
+    wind: false,
   });
 
-  const fetchClimateLayer = async (variable) => {
-    try {
-      const res = await fetch(`http://localhost:5000/climate/${variable}`);
-      const data = await res.json();
-      setClimateData(prev => ({ ...prev, [variable]: data }));
-    } catch (err) {
-      console.error(err);
-    }
+  const layers = {
+    temp: {
+      name: "🌡 Temperatura",
+      url: `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${apiKey}`,
+      opacity: 0.7,
+    },
+    precipitation: {
+      name: "☔ Precipitación",
+      url: `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${apiKey}`,
+      opacity: 0.6,
+    },
+    clouds: {
+      name: "☁️ Nubes",
+      url: `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${apiKey}`,
+      opacity: 0.6,
+    },
+    wind: {
+      name: "💨 Viento",
+      url: `https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${apiKey}`,
+      opacity: 0.6,
+    },
   };
 
   useEffect(() => {
-    ["temperature", "precipitation", "soil_moisture", "drought"].forEach(fetchClimateLayer);
-    const interval = setInterval(() => {
-      ["temperature", "precipitation", "soil_moisture", "drought"].forEach(fetchClimateLayer);
-    }, 10 * 60 * 1000); // actualizar cada 10 minutos
-    return () => clearInterval(interval);
+    const mockData = [
+      { id: 1, name: "Popayán", lat: 2.4448, lng: -76.6147, temp: 22 },
+      { id: 2, name: "Cali", lat: 3.4516, lng: -76.5320, temp: 28 },
+      { id: 3, name: "Bogotá", lat: 4.7110, lng: -74.0721, temp: 18 },
+      { id: 4, name: "Medellín", lat: 6.2442, lng: -75.5812, temp: 24 },
+    ];
+    setData(mockData);
   }, []);
 
-  return (
-    <MapContainer center={[20,0]} zoom={2} style={{ height: "600px", width: "100%" }}>
-      <LayersControl position="topright">
-        <BaseLayer checked name="OpenStreetMap">
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        </BaseLayer>
+  // Alternar visibilidad de capas
+  const toggleLayer = (layerKey) => {
+    setActiveLayers((prev) => ({
+      ...prev,
+      [layerKey]: !prev[layerKey],
+    }));
+  };
 
-        {["temperature", "precipitation", "soil_moisture", "drought"].map(varName => (
-          <Overlay key={varName} name={varName.charAt(0).toUpperCase() + varName.slice(1)}>
-            {climateData[varName].map((d, i) => (
-              <CircleMarker key={`${varName}-${i}`} center={[d.lat, d.lon]} radius={3} color={varName === "temperature" ? "red" : varName === "precipitation" ? "blue" : varName === "soil_moisture" ? "green" : "brown"}>
-                <Tooltip>
-                  <div>
-                    <strong>{varName}</strong><br />
-                    Valor: {d.value.toFixed(2)}
-                  </div>
-                </Tooltip>
-              </CircleMarker>
-            ))}
-          </Overlay>
+  return (
+    <div className="map-container">
+      <MapContainer
+        center={[4.5, -75.5]} // centro de Colombia
+        zoom={6}
+        scrollWheelZoom={true}
+        className="leaflet-map"
+      >
+        {/* 🌍 Capa base */}
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>"
+        />
+
+        {/* 🧩 Capas dinámicas de OpenWeatherMap */}
+        {Object.keys(layers).map(
+          (key) =>
+            activeLayers[key] && (
+              <TileLayer
+                key={key}
+                url={layers[key].url}
+                opacity={layers[key].opacity}
+              />
+            )
+        )}
+
+        {/* 📍 Marcadores de ejemplo */}
+        {data.map((city) => (
+          <Marker key={city.id} position={[city.lat, city.lng]} icon={userIcon}>
+            <Popup>
+              <b>{city.name}</b>
+              <br />
+              Temperatura: {city.temp}°C
+            </Popup>
+          </Marker>
         ))}
-      </LayersControl>
-    </MapContainer>
+
+        {/* 🔴 Círculos visuales */}
+        {data.map((city) => (
+          <CircleMarker
+            key={`circle-${city.id}`}
+            center={[city.lat, city.lng]}
+            radius={10}
+            pathOptions={{
+              color: city.temp > 25 ? "red" : "blue",
+              fillOpacity: 0.4,
+            }}
+          />
+        ))}
+      </MapContainer>
+
+      {/* 📊 Leyenda flotante */}
+      <div className="legend-panel">
+        <h4>🌎 Capas disponibles</h4>
+        {Object.keys(layers).map((key) => (
+          <div key={key} className="legend-item">
+            <input
+              type="checkbox"
+              id={key}
+              checked={activeLayers[key]}
+              onChange={() => toggleLayer(key)}
+            />
+            <label htmlFor={key}>{layers[key].name}</label>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

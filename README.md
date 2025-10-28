@@ -1,0 +1,2 @@
+# proyecto_front_climetrica_linux_
+proyecto_climetrica_Frontend, Entorno Linux_Django.React.Mongo

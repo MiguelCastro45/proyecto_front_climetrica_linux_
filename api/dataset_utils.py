@@ -12,7 +12,7 @@ try:
 except Exception:
     HAS_GPD = False
 
-from .mongodb import db, datasets_col, observations_col  # define observations_col en mongodb.py
+from .mongodb import db, datasets_col # define en mongodb.py
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'uploads')
 UPLOAD_DIR = os.path.abspath(UPLOAD_DIR)

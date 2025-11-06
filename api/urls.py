@@ -11,6 +11,8 @@ urlpatterns = [
     # Admin — gestión de usuarios
     path('users/', views.list_users, name='list_users'),                # GET
     path('users/<str:user_id>/', views.update_user, name='update_user'), # PUT
-    path('users/<str:user_id>/', views.delete_user, name='delete_user'), # DELETE
+    path('users/delete/<str:user_id>/', views.delete_user, name='delete_user'), # DELETE
 
+    #Listar Datasets
+    path('api/climate-data/', views.get_climate_data, name='get_climate_data'),
 ]

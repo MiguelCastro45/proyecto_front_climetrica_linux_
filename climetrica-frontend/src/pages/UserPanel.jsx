@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
-import "./UserPanel.css";
+import "../styles/UserPanel.css";
 import UserMapDashboard from "./UserMapDashboard";
+
 
 export default function UserPanel() {
   const navigate = useNavigate();
@@ -96,20 +97,21 @@ export default function UserPanel() {
     }
   };
 
-  const handleDelete = async (_id) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este usuario?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      await API.delete(`/users/${_id}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers((prev) => prev.filter((u) => u._id !== _id));
-      setMsg("Usuario eliminado ✅");
-    } catch (err) {
-      console.error(err);
-      setMsg("Error al eliminar usuario");
-    }
-  };
+const handleDelete = async (_id) => {
+  if (!window.confirm("¿Seguro que deseas eliminar este usuario?")) return;
+  try {
+    const token = localStorage.getItem("token");
+    await API.delete(`/users/delete/${_id}/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setUsers((prev) => prev.filter((u) => u._id !== _id));
+    setMsg("✅ Usuario eliminado correctamente");
+  } catch (err) {
+    console.error(err);
+    setMsg("❌ Error al eliminar usuario");
+  }
+};
+
 
   if (loading) return <div className="loading">Cargando...</div>;
 

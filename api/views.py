@@ -7,6 +7,8 @@ from .mongodb import users_col
 from .auth_utils import hash_password, check_password, create_jwt
 from .decorators import jwt_required, admin_required
 import traceback
+from .mongodb import climate_data_col
+
 
 
 # ----------------------------
@@ -166,3 +168,13 @@ def delete_user(request, user_id):
     except Exception as e:
         traceback.print_exc()
         return JsonResponse({"error": str(e)}, status=500)
+    
+
+def get_climate_data(request):
+    try:
+        data = list(climate_data_col.find({}, {'_id': 0}))
+        return JsonResponse({"status": "success", "data": data}, safe=False)
+    except Exception as e:
+        import traceback
+        print("❌ ERROR en get_climate_data:", traceback.format_exc())
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)

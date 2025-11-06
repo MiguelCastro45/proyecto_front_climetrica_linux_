@@ -14,7 +14,7 @@ datasets_col = db['datasets']
 reports_col = db['reports']
 climate_records_col = db['climate_records']
 config_col = db['system_config']
-observations_col = db["observations"] 
+climate_data_col = db["climate_data"] 
 
 # 🔹 GridFS handler
 fs = gridfs.GridFS(db)

@@ -7,6 +7,9 @@ import ClimateDashboard from "./pages/ClimateDashboard";
 import UserPanel from "./pages/UserPanel";
 import UploadDataset from "./pages/UploadDataset";
 
+
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -18,6 +21,7 @@ function App() {
         <Route path="/upload" element={<UploadDataset />} />
         <Route path="/user" element={<UserPanel />} />
         <Route path="/climate" element={<ClimateDashboard />} />
+        
       </Routes>
     </BrowserRouter>
   );

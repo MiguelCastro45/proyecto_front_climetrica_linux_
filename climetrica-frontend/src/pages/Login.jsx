@@ -3,6 +3,8 @@ import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 import "../styles/Login.css"; 
 
+
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +28,14 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
+        <div>
+      <img
+        src="/logo/1_img.jpg"   
+        alt="Logo de Climétrica"
+        style={{ borderRadius: "100%", width: "320px" }}
+      />
+    </div>
+        
         <h2>Iniciar Sesión</h2>
         {error && <p className="error">{error}</p>}
         <form onSubmit={handleLogin} className="login-form">

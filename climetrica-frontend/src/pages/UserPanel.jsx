@@ -158,6 +158,13 @@ export default function UserPanel() {
       <div className="dashboard-layout">
         {/* 🔵 Lado izquierdo: perfil y acciones */}
         <div className="left-panel">
+          <div>
+            <img
+              src="/logo/1_img.jpg"   
+              alt="Logo de Climétrica"
+              style={{ borderRadius: "90%", width: "320px" }}
+            />
+          </div>
           {user && (
             <div className="welcome-card">
               <h2>Bienvenido <br />{user.first_name} {user.last_name}</h2>

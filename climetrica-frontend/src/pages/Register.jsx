@@ -129,8 +129,8 @@ export default function Register() {
           <option value="inversionista">Inversionista</option>
         </select>
 
-        <button className="btn-blue" type="submit">Registrarse</button>
-        <p></p>
+        <button className="btn-blue" type="submit">Registrarse</button >
+        <br></br>
         <button type="button" className="btn-back" onClick={goToLogin}>
           Volver
         </button>

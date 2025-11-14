@@ -1,4 +1,8 @@
 /* src/styles/UserMapDashboard.css */
+
+/* ============================================
+   CONTENEDOR PRINCIPAL
+   ============================================ */
 .um-dashboard {
   position: relative;
   width: 100%;
@@ -6,112 +10,1400 @@
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-/* map */
-.um-map { width: 100%; height: 100%; }
+.um-map { 
+  width: 100%; 
+  height: 100%; 
+}
 
-/* variable selector */
+/* ============================================
+   CONTROLES DE ZOOM PERSONALIZADOS - MEJORADOS
+   ============================================ */
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.leaflet-control-zoom a {
+  width: 42px !important;
+  height: 42px !important;
+  line-height: 42px !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #1f2937 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease !important;
+  text-shadow: none !important;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.leaflet-control-zoom a:first-child {
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #2563eb !important;
+  transform: scale(1.05);
+}
+
+.leaflet-control-zoom a:active {
+  background: rgba(59, 130, 246, 0.25) !important;
+  transform: scale(0.98);
+}
+
+.leaflet-bar a {
+  border-bottom: none !important;
+}
+
+/* ============================================
+   BANNER DE ESTADO DE DATOS
+   ============================================ */
+.data-status-banner {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(15px);
+}
+
+.data-status-banner.live {
+  background: rgba(34, 197, 94, 0.95);
+  color: white;
+  border: 2px solid rgba(34, 197, 94, 1);
+}
+
+.data-status-banner.historical {
+  background: rgba(59, 130, 246, 0.95);
+  color: white;
+  border: 2px solid rgba(59, 130, 246, 1);
+}
+
+.data-status-main {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.data-status-sub {
+  font-size: 11px;
+  opacity: 0.95;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ============================================
+   BARRA DE CONTROLES - SÚPER TRANSPARENTE Y DIFUMINADA
+   ============================================ */
 .um-var-selector {
   position: absolute;
-  top: 12px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1600;
-  background: rgba(224, 226, 231, 0.9);
-  padding: 8px 12px;
-  border-radius: 10px;
-  color: #e6f4ff;
-  display:flex;
-  gap:8px;
-  align-items:center;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.45);
-}
-.um-var-selector label { font-weight:700; color:#161a1f; }
-.um-var-selector select {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: #787d81ff;
-  padding: 6px 8px;
-  border-radius: 6px;
-  outline: none;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  padding: 8px 16px;
+  border-radius: 14px;
+  color: #1a1a1a;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 
+              0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  overflow-x: auto;
+  overflow-y: visible; /* CAMBIADO: permite que el dropdown sea visible */
+  max-height: 50px;
+  flex-wrap: nowrap;
+  max-width: 95%;
 }
 
-.um-var-selector select {
-  background: rgba(255, 255, 255, 0.84); /* similar al input */
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  color: #0a0b0c; /* texto más legible */
-  padding: 8px 10px;
+/* Scrollbar personalizado de la barra */
+.um-var-selector::-webkit-scrollbar {
+  height: 3px;
+}
+
+.um-var-selector::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.um-var-selector::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.um-var-selector::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Labels - tema claro con sombra para legibilidad */
+.control-label,
+.um-var-selector label { 
+  font-weight: 700; 
+  color: #1f2937;
+  font-size: 13px;
+  white-space: nowrap;
+  margin: 0;
+  flex-shrink: 0;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* ============================================
+   CONTENEDOR DE BOTONES DE DIBUJAR
+   ============================================ */
+.draw-buttons-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   INPUT DE BÚSQUEDA - MEJORADO
+   ============================================ */
+.search-container {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  z-index: 100000; /* Muy alto para asegurar que el dropdown esté sobre todo */
+  /* IMPORTANTE: NO agregar overflow: hidden aquí, cortaría el dropdown */
+}
+
+.search-input,
+.um-var-selector input[type="text"] {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  color: #1f2937;
+  padding: 6px 12px;
   border-radius: 8px;
   outline: none;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  appearance: none; /* elimina estilo nativo del navegador */
+  font-size: 13px;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  max-width: 200px;
+  flex-shrink: 0;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.search-input::placeholder,
+.um-var-selector input[type="text"]::placeholder {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+}
+
+.search-input:focus,
+.um-var-selector input[type="text"]:focus {
+  background: rgba(255, 255, 255, 0.95); /* Más opaco cuando tiene foco */
+  border-color: #3b82f6; /* Borde azul sólido */
+  border-width: 2px; /* Borde más grueso */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
+              0 4px 12px rgba(59, 130, 246, 0.1);
+  border-radius: 8px; /* Siempre con border-radius completo */
+}
+
+/* ============================================
+   DROPDOWN DE SUGERENCIAS - MEJORADO PARA MÁXIMA NITIDEZ
+   ============================================ */
+.search-suggestions {
+  position: fixed !important;
+  /* top y left se calculan dinámicamente en JavaScript */
+  background: #ffffff !important;
+  border: 2px solid #3b82f6 !important;
+  border-radius: 10px;
+  box-shadow: 
+    0 10px 30px rgba(59, 130, 246, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(59, 130, 246, 0.1) !important;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 999999 !important; /* Extremadamente alto - sobre todo el dashboard */
+  margin-top: 0;
+  animation: slideDownFade 0.15s ease-out;
+  pointer-events: auto;
+  
+  /* ========================================
+     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
+     ======================================== */
+  /* Forzar renderizado de texto nítido */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+  
+  /* Prevenir sub-pixel rendering que causa borrosidad */
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  perspective: 1000px !important;
+  -webkit-perspective: 1000px !important;
+  
+  /* Forzar aceleración de hardware sin transformaciones problemáticas */
+  will-change: opacity !important;
+  
+  /* Asegurar renderizado en pixels enteros */
+  transform-style: preserve-3d !important;
+  -webkit-transform-style: preserve-3d !important;
+  
+  /* Prevenir filtros que afectan la nitidez */
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateZ(0) translateY(-8px); /* Mantener translateZ para nitidez */
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0) translateY(0); /* Mantener translateZ para nitidez */
+  }
+}
+
+.search-suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, padding-left 0.15s ease; /* Solo transiciones que no afecten nitidez */
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #ffffff !important;
+  min-height: 64px;
+  
+  /* ========================================
+     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
+     ======================================== */
+  /* Forzar renderizado de texto nítido */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+  
+  /* Prevenir sub-pixel rendering */
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  
+  /* Remover will-change para evitar problemas de renderizado */
+  will-change: auto !important;
+}
+
+.search-suggestion-item:first-child {
+  border-radius: 10px 10px 0 0; /* Esquinas superiores redondeadas */
+}
+
+.search-suggestion-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 10px 10px; /* Esquinas inferiores redondeadas */
+}
+
+.search-suggestion-item:first-child:last-child {
+  border-radius: 10px; /* Si solo hay un item, todas las esquinas redondeadas */
+}
+
+.search-suggestion-item:hover {
+  background: linear-gradient(90deg, 
+    rgba(59, 130, 246, 0.12), 
+    rgba(147, 197, 253, 0.12)) !important;
+  padding-left: 22px;
+  /* REMOVIDO: transform que causaba borrosidad */
+}
+
+.search-suggestion-item:active {
+  background: linear-gradient(90deg, 
+    rgba(59, 130, 246, 0.18), 
+    rgba(147, 197, 253, 0.18)) !important;
+  /* REMOVIDO: transform scale que causaba borrosidad */
+}
+
+.suggestion-icon {
+  font-size: 26px;
+  margin-right: 16px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  line-height: 1;
+  
+  /* Asegurar renderizado nítido del emoji */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.suggestion-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.suggestion-name {
+  /* Tamaño de fuente optimizado para renderizado nítido */
+  font-size: 13px !important;
+  color: #111827 !important;
+  font-weight: 500 !important; /* Aumentado de 100 a 500 para mejor legibilidad */
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.5;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+  
+  /* ========================================
+     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
+     ======================================== */
+  /* Forzar renderizado de texto super nítido */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+  
+  /* Prevenir cualquier transformación */
+  transform: none !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  
+  /* Asegurar pixels enteros */
+  transform-style: flat !important;
+  -webkit-transform-style: flat !important;
+}
+
+.suggestion-type {
+  font-size: 13px;
+  color: #6b7280 !important;
+  text-transform: capitalize;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  
+  /* ========================================
+     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
+     ======================================== */
+  /* Forzar renderizado de texto super nítido */
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+  
+  /* Prevenir cualquier transformación */
+  transform: none !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Scrollbar para sugerencias */
+.search-suggestions::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 0 0 10px 0;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 4px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* ============================================
+   SELECT MEJORADO CON FLECHA PERSONALIZADA
+   ============================================ */
+.control-select,
+.um-var-selector select {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  color: #1f2937;
+  padding: 6px 32px 6px 12px;
+  border-radius: 8px;
+  outline: none;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  max-width: 200px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f2937' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 18px;
 }
+
+.control-select:hover,
+.um-var-selector select:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.control-select:focus,
+.um-var-selector select:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
+              0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.control-select option,
 .um-var-selector select option {
-  color: #0a0b0c; /* opciones visibles */
-  background: #fff; 
+  color: #1f2937;
+  background: #ffffff;
+  padding: 10px;
+  font-weight: 500;
 }
 
+.control-select option:hover,
+.um-var-selector select option:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
 
-/* legend */
+.control-select option:checked,
+.um-var-selector select option:checked {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+  font-weight: 600;
+}
+
+/* ============================================
+   INPUTS DE FECHA (CALENDARIOS) - MEJORADOS
+   ============================================ */
+.date-input,
+.um-var-selector input[type="date"] {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  color: #1f2937;
+  padding: 5px 10px;
+  border-radius: 8px;
+  outline: none;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 135px;
+  max-width: 135px;
+  flex-shrink: 0;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.date-input:hover,
+.um-var-selector input[type="date"]:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.date-input:focus,
+.um-var-selector input[type="date"]:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
+              0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.date-input::-webkit-calendar-picker-indicator,
+.um-var-selector input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  width: 18px;
+  height: 18px;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3e%3c/rect%3e%3cline x1='16' y1='2' x2='16' y2='6'%3e%3c/line%3e%3cline x1='8' y1='2' x2='8' y2='6'%3e%3c/line%3e%3cline x1='3' y1='10' x2='21' y2='10'%3e%3c/line%3e%3c/svg%3e");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: none;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover,
+.um-var-selector input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: rgba(59, 130, 246, 0.1);
+  transform: scale(1.1);
+}
+
+.date-input::-webkit-datetime-edit,
+.um-var-selector input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+  font-weight: 500;
+}
+
+.date-input::-webkit-datetime-edit-fields-wrapper,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.date-input::-webkit-datetime-edit-text,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-text {
+  color: rgba(0, 0, 0, 0.4);
+  padding: 0 2px;
+}
+
+.date-input::-webkit-datetime-edit-month-field,
+.date-input::-webkit-datetime-edit-day-field,
+.date-input::-webkit-datetime-edit-year-field,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-month-field,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-day-field,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-year-field {
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.date-input::-webkit-datetime-edit-month-field:hover,
+.date-input::-webkit-datetime-edit-day-field:hover,
+.date-input::-webkit-datetime-edit-year-field:hover,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-month-field:hover,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-day-field:hover,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-year-field:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.date-input::-webkit-datetime-edit-month-field:focus,
+.date-input::-webkit-datetime-edit-day-field:focus,
+.date-input::-webkit-datetime-edit-year-field:focus,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.um-var-selector input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background: rgba(59, 130, 246, 0.25);
+  color: #1f2937;
+  outline: none;
+}
+
+/* ============================================
+   BOTONES - TEMA GLASSMORPHISM
+   ============================================ */
+.um-btn { 
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.um-btn:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(5, 150, 105, 1));
+}
+
+.um-btn:active {
+  transform: translateY(0);
+}
+
+/* Botón de búsqueda */
+.btn-search {
+  margin-left: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95));
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.btn-search:hover {
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+}
+
+/* Botón de dibujar */
+.btn-draw {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.95), rgba(124, 58, 237, 0.95));
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.btn-draw:hover {
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(124, 58, 237, 1));
+}
+
+.btn-draw.active {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.btn-draw.active:hover {
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
+}
+
+/* Botón borrar figura */
+.btn-delete {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95));
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.btn-delete:hover {
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 1), rgba(217, 119, 6, 1));
+}
+
+/* Botón peligro (PDF) */
+.um-btn.danger { 
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.um-btn.danger:hover {
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 1));
+}
+
+/* Botón limpiar puntos */
+.btn-clear-points {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95));
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.btn-clear-points:hover {
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 1), rgba(217, 119, 6, 1));
+}
+
+/* Botón cerrar modal */
+.btn-close-modal {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.95), rgba(75, 85, 99, 0.95));
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.25);
+}
+
+.btn-close-modal:hover {
+  box-shadow: 0 6px 16px rgba(107, 114, 128, 0.35);
+  background: linear-gradient(135deg, rgba(107, 114, 128, 1), rgba(75, 85, 99, 1));
+}
+
+/* ============================================
+   LEYENDA
+   ============================================ */
 .um-legend {
   position: absolute;
   bottom: 22px;
   left: 18px;
   z-index: 1600;
-  display:flex;
-  gap:8px;
-  align-items:center;
-  background: rgba(6,12,18,0.88);
-  padding: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(6, 12, 18, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 10px;
   border-radius: 10px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.45);
-  user-select:none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
-/* layer control (checkbox list) */
-/* layer control removed - use select to change active layer */
-.um-legend-bar { width:22px; height:160px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); cursor:crosshair; }
-.um-legend-labels { display:flex; flex-direction:column; justify-content:space-between; height:160px; color:#dbeafe; font-size:12px; margin-left:6px; text-align:left; }
-.um-legend-unit { font-size:11px; color:#9fbfe8; margin:6px 0; }
-.um-legend-tooltip { position:absolute; left: 62px; bottom: 90px; background: rgba(0,0,0,0.86); color:#fff; padding:6px 8px; border-radius:6px; font-weight:700; z-index:1700; }
 
-/* buttons */
-.um-buttons { position:absolute; right:18px; bottom:22px; z-index:1600; display:flex; flex-direction:column; gap:8px; }
-.um-btn { background: linear-gradient(90deg,#065f46,#0891b2); color:#fff; padding:8px 12px; border-radius:8px; border:none; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(3,37,65,0.25); }
-.um-btn.danger { background: linear-gradient(90deg,#ef4444,#dc2626); }
-.um-btn:hover { transform: translateY(-3px); }
+.um-legend-bar { 
+  width: 22px;
+  height: 160px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: crosshair;
+  transition: transform 0.2s ease;
+}
 
-/* popup */
-.leaflet-popup-content-wrapper { background: rgba(6,10,18,0.96) !important; color:#eaf6ff !important; border-radius:10px !important; box-shadow:0 10px 30px rgba(0,0,0,0.6) !important; }
-.popup-wrapper { width:420px; display:flex; flex-direction:column; gap:8px; }
-.popup-header .popup-title { font-weight:800; font-size:14px; color:#fff; }
-.popup-header .popup-place { font-size:12px; color:#bcd9ff; }
-.popup-coords { font-size:12px; color:#9fbfe8; }
-.popup-stats { font-size:13px; color:#e6f4ff; }
-.popup-canvas { width:380px; height:140px; border-radius:8px; border:1px solid rgba(255,255,255,0.04); }
-.popup-expand { background: linear-gradient(90deg,#06b6d4,#0284c7); border:none; padding:8px 10px; border-radius:8px; color:white; font-weight:700; cursor:pointer; }
+.um-legend-bar:hover {
+  transform: scale(1.05);
+}
 
-/* modal */
-.um-modal { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(2,6,12,0.6); z-index:3000; }
-.um-modal-card { width:88%; max-width:980px; background: linear-gradient(180deg,#071428,#041021); border-radius:12px; padding:16px; box-shadow:0 12px 40px rgba(0,0,0,0.6); color:#e6f4ff; }
-.um-modal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
-.um-modal-controls { display:flex; align-items:center; gap:8px; color:#cfe8ff; }
-.um-modal-body { display:flex; justify-content:center; }
-.um-modal-footer { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+.um-legend-labels { 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 160px;
+  color: #dbeafe;
+  font-size: 12px;
+  margin-left: 6px;
+  text-align: left;
+}
 
-/* responsive */
-@media (max-width: 900px) {
-  .um-legend { bottom: 120px; left: 12px; }
-  .um-buttons { right: 12px; bottom: 12px; }
-  .popup-wrapper { width:300px; }
-  .popup-canvas { width:300px; height:120px; }
-  .um-var-selector { top: 8px; padding: 6px 8px; }
+.um-legend-unit { 
+  font-size: 11px;
+  color: #9fbfe8;
+  margin: 6px 0;
+  font-weight: 600;
+}
+
+.um-legend-tooltip { 
+  position: absolute;
+  left: 62px;
+  bottom: 90px;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  z-index: 1700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   BOTONES DE DESCARGA
+   ============================================ */
+.um-buttons { 
+  position: absolute;
+  right: 18px;
+  bottom: 22px;
+  z-index: 1600;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ============================================
+   POPUPS DEL MAPA
+   ============================================ */
+.leaflet-popup-content-wrapper { 
+  background: rgba(6, 10, 18, 0.96) !important;
+  color: #eaf6ff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.popup-wrapper { 
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px;
+}
+
+.popup-header .popup-title { 
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.popup-header .popup-place { 
+  font-size: 13px;
+  color: #bcd9ff;
+  margin-bottom: 2px;
+}
+
+.popup-coords { 
+  font-size: 12px;
+  color: #9fbfe8;
+  opacity: 0.8;
+}
+
+.popup-stats { 
+  font-size: 13px;
+  color: #e6f4ff;
+  line-height: 1.6;
+}
+
+.popup-canvas { 
+  width: 380px;
+  height: 140px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.popup-expand { 
+  background: linear-gradient(135deg, #06b6d4, #0284c7);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.popup-expand:hover {
+  background: linear-gradient(135deg, #0891b2, #0369a1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+/* ============================================
+   MODAL - MEJORADO
+   ============================================ */
+.um-modal { 
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 12, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 3000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.um-modal-card { 
+  width: 90%;
+  max-width: 1100px;
+  background: linear-gradient(180deg, rgba(10, 22, 40, 0.97), rgba(5, 13, 26, 0.97));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  color: #e6f4ff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.um-modal-header { 
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.modal-close-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ff6b6b;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  transform: scale(1.1);
+}
+
+/* Información del modal */
+.um-modal-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modal-info-item {
+  font-size: 13px;
+  color: #cfe8ff;
+  line-height: 1.6;
+}
+
+.modal-info-item strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Controles de fecha del modal */
+.um-modal-date-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+}
+
+.modal-date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.modal-label {
+  color: #cfe8ff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.modal-date-input {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #e6f4ff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(2,6,23,0.6);
+  outline: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-date-input:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255,255,255,0.25);
+}
+
+.modal-date-input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.modal-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.modal-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.um-modal-body { 
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+.um-modal-footer { 
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+/* Scrollbar del modal */
+.um-modal-card::-webkit-scrollbar {
+  width: 10px;
+}
+
+.um-modal-card::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.um-modal-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.um-modal-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   LOADING PDF
+   ============================================ */
+.pdf-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: white;
+  padding: 24px 48px;
+  border-radius: 16px;
+  z-index: 10000;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0% { transform: scale(0.9); opacity: 0.7; }
-  50% { transform: scale(1.3); opacity: 1; }
-  100% { transform: scale(0.9); opacity: 0.7; }
+  0%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+/* ============================================
+   ESTILOS PARA POLÍGONO - MEJORADOS
+   ============================================ */
+.leaflet-interactive {
+  stroke-width: 4px !important;
+  stroke-opacity: 0.9 !important;
+}
+
+.leaflet-interactive.leaflet-polygon {
+  stroke: #3b82f6 !important;
+  stroke-width: 5px !important;
+  fill: rgba(59, 130, 246, 0.25) !important;
+  fill-opacity: 0.35 !important;
+}
+
+.leaflet-interactive.leaflet-polygon:hover {
+  stroke: #2563eb !important;
+  stroke-width: 6px !important;
+  fill: rgba(59, 130, 246, 0.35) !important;
+  fill-opacity: 0.45 !important;
+}
+
+/* Vértices del polígono */
+.leaflet-marker-icon {
+  background-color: #3b82f6 !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5) !important;
+}
+
+.leaflet-marker-icon:hover {
+  background-color: #2563eb !important;
+  transform: scale(1.2);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.7) !important;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1400px) {
+  .um-var-selector {
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .um-var-selector {
+    font-size: 12px;
+    padding: 7px 12px;
+    gap: 8px;
+  }
+  
+  .control-label,
+  .um-var-selector label {
+    font-size: 12px;
+  }
+  
+  .search-input,
+  .um-var-selector input[type="text"] {
+    min-width: 170px;
+    max-width: 170px;
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .control-select,
+  .um-var-selector select {
+    min-width: 180px;
+    max-width: 180px;
+    font-size: 12px;
+    padding: 5px 28px 5px 10px;
+    background-size: 16px;
+  }
+  
+  .date-input,
+  .um-var-selector input[type="date"] {
+    min-width: 120px;
+    max-width: 120px;
+    font-size: 11px;
+  }
+
+  .um-btn {
+    font-size: 12px;
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .um-legend { 
+    bottom: 120px;
+    left: 12px;
+    padding: 8px;
+  }
+  
+  .um-buttons { 
+    right: 12px;
+    bottom: 12px;
+  }
+  
+  .popup-wrapper { 
+    width: 300px;
+  }
+  
+  .popup-canvas { 
+    width: 300px;
+    height: 120px;
+  }
+  
+  .um-var-selector { 
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    padding: 6px 10px;
+    gap: 6px;
+    max-width: calc(100% - 16px);
+  }
+
+  .data-status-banner {
+    top: 64px;
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .data-status-main {
+    font-size: 12px;
+  }
+
+  .data-status-sub {
+    font-size: 10px;
+  }
+
+  .search-input,
+  .um-var-selector input[type="text"] {
+    min-width: 140px;
+    max-width: 140px;
+  }
+
+  .control-select,
+  .um-var-selector select {
+    min-width: 150px;
+    max-width: 150px;
+  }
+
+  .date-input,
+  .um-var-selector input[type="date"] {
+    min-width: 110px;
+    max-width: 110px;
+  }
+
+  .um-modal-card {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .um-modal-date-controls {
+    flex-direction: column;
+  }
+
+  .modal-date-group {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .um-var-selector {
+    overflow-x: scroll;
+    justify-content: flex-start;
+  }
+
+  .search-input,
+  .um-var-selector input[type="text"] {
+    min-width: 130px;
+    max-width: 130px;
+    font-size: 11px;
+  }
+
+  .control-select,
+  .um-var-selector select {
+    min-width: 140px;
+    max-width: 140px;
+    font-size: 11px;
+    padding: 5px 26px 5px 8px;
+    background-size: 14px;
+  }
+
+  .date-input,
+  .um-var-selector input[type="date"] {
+    min-width: 105px;
+    max-width: 105px;
+    font-size: 10px;
+  }
+
+  .control-label,
+  .um-var-selector label {
+    font-size: 11px;
+  }
+
+  .um-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+  
+  .um-legend {
+    bottom: auto;
+    top: 140px;
+    left: 8px;
+  }
+  
+  .um-buttons {
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .data-status-banner {
+    top: 68px;
+    max-width: 90%;
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+
+  .data-status-main {
+    font-size: 11px;
+  }
+
+  .data-status-sub {
+    font-size: 9px;
+  }
+
+  .um-modal-card {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .um-modal-info {
+    grid-template-columns: 1fr;
+  }
+
+  .um-modal-footer {
+    flex-direction: column;
+  }
+
+  .um-modal-footer .um-btn {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   ANIMACIONES Y TRANSICIONES
+   ============================================ */
+.um-var-selector input,
+.um-var-selector select,
+.um-var-selector button {
+  transition: all 0.2s ease;
+}
+
+/* Mejora visual al hacer scroll horizontal */
+.um-var-selector {
+  scroll-behavior: smooth;
+}
+
+/* Efecto glassmorphism mejorado en hover */
+.um-var-selector:hover {
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Asegurar que los elementos flex no crezcan */
+.um-var-selector > * {
+  flex-shrink: 0;
+}
+
+/* Mejorar la legibilidad en inputs */
+.um-var-selector input,
+.um-var-selector select {
+  font-family: inherit;
+}
+
+/* Prevenir selección de texto en la barra */
+.um-var-selector {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+/* Permitir selección en inputs */
+.um-var-selector input,
+.um-var-selector select {
+  user-select: auto;
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
 }

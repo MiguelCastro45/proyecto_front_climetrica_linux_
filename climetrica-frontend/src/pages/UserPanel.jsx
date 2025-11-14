@@ -190,7 +190,7 @@ export default function UserPanel() {
         {/* 🌍 Lado derecho: mapa o administración */}
         <div className="right-panel">
           {user?.role !== "admin" ? (
-            <UserMapDashboard />
+            <UserMapDashboard currentUser={user}/>
           ) : (
             <div className="admin-panel-content">
               <h3>Administración de usuarios</h3>

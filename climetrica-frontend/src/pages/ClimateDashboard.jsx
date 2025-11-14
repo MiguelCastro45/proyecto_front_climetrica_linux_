@@ -12,26 +12,36 @@ export default function ClimateDashboard() {
   const mapRef = useRef();
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [filters, setFilters] = useState({ year: "", month: "", day: "", hour: "" });
+  const [filters, setFilters] = useState({ fecha: "", lugar: "", variable: "" });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [expandedRow, setExpandedRow] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await API.get("http://localhost:8000/api/climate-data/");
         const raw = res.data.status ? res.data.data : res.data;
-        const cleaned = raw
-          .filter(d => d.latitude && d.longitude && d.valid_time)
-          .map(d => {
-            const lat = parseFloat(d.latitude);
-            const lon = parseFloat(d.longitude);
-            const sp = parseFloat(d.sp);
-            const date = new Date(d.valid_time);
-            if (isNaN(lat) || isNaN(lon) || isNaN(sp) || isNaN(date.getTime())) return null;
-            return { valid_time: date, latitude: lat, longitude: lon, sp };
-          })
-          .filter(d => d !== null);
+
+        const cleaned = raw.map((item) => ({
+          nombre: item.usuario?.nombre || "N/A",
+          rol: item.usuario?.rol || "N/A",
+          email: item.usuario?.email || "N/A",
+          variable: item.consulta?.variable || "N/A",
+          lugar: item.consulta?.lugar || "N/A",
+          latitud: item.consulta?.coordenadas?.latitud || "N/A",
+          longitud: item.consulta?.coordenadas?.longitud || "N/A",
+          rangoTemporal: item.consulta?.rangoTemporal || "N/A",
+          valorActual: item.datosClimaticos?.valorActual || "N/A",
+          promedio: item.datosClimaticos?.estadisticas?.promedio || "N/A",
+          maximo: item.datosClimaticos?.estadisticas?.maximo || "N/A",
+          minimo: item.datosClimaticos?.estadisticas?.minimo || "N/A",
+          fecha: item.usuario?.fechaDescarga
+            ? new Date(item.usuario.fechaDescarga).toLocaleDateString()
+            : "N/A",
+          hora: item.usuario?.horaDescarga || "N/A",
+        }));
+
         setData(cleaned);
         setFilteredData(cleaned);
       } catch (err) {
@@ -44,20 +54,18 @@ export default function ClimateDashboard() {
     fetchData();
   }, []);
 
-  const handleFilterChange = e => {
+  const handleFilterChange = (e) => {
     const { name, value } = e.target;
     const newFilters = { ...filters, [name]: value };
     setFilters(newFilters);
 
-    const filtered = data.filter(d => {
-      const date = d.valid_time;
-      return (
-        (!newFilters.year || date.getFullYear().toString() === newFilters.year) &&
-        (!newFilters.month || (date.getMonth() + 1).toString().padStart(2, "0") === newFilters.month) &&
-        (!newFilters.day || date.getDate().toString().padStart(2, "0") === newFilters.day) &&
-        (!newFilters.hour || date.getHours().toString().padStart(2, "0") === newFilters.hour)
-      );
+    const filtered = data.filter((d) => {
+      const matchFecha = !newFilters.fecha || d.fecha === new Date(newFilters.fecha).toLocaleDateString();
+      const matchLugar = !newFilters.lugar || d.lugar.toLowerCase().includes(newFilters.lugar.toLowerCase());
+      const matchVariable = !newFilters.variable || d.variable === newFilters.variable;
+      return matchFecha && matchLugar && matchVariable;
     });
+
     setFilteredData(filtered);
   };
 
@@ -77,9 +85,7 @@ export default function ClimateDashboard() {
       let y = 150;
       filteredData.slice(0, 20).forEach((d, i) => {
         pdf.text(
-          `${i + 1}. ${d.valid_time.toLocaleString()} | Lat: ${d.latitude.toFixed(
-            3
-          )}, Lon: ${d.longitude.toFixed(3)} | sp: ${d.sp.toFixed(2)}`,
+          `${i + 1}. ${d.variable} (${d.lugar}) - Valor: ${d.valorActual}°C`,
           14,
           y
         );
@@ -105,47 +111,99 @@ export default function ClimateDashboard() {
       {/* HEADER */}
       <div className="header-actions">
         <h2 className="title">📊 Datos Climáticos</h2>
-        <div className="buttons">
-          <button className="btn btn-back" onClick={() => navigate(-1)}>⬅️ Volver</button>
-          <button className="btn btn-download" onClick={handleDownloadReport}>📥 Generar Reporte</button>
-        </div>
       </div>
 
-      {/* FILTROS */}
+      {/* FILTROS ACTUALIZADOS */}
       <div className="filters">
-        {["year","month","day","hour"].map(f => (
-          <select key={f} name={f} value={filters[f]} onChange={handleFilterChange}>
-            <option value="">{f.charAt(0).toUpperCase() + f.slice(1)}</option>
-            {[...new Set(
-              data.map(d => {
-                if(f==="year") return d.valid_time.getFullYear();
-                if(f==="month") return (d.valid_time.getMonth()+1).toString().padStart(2,"0");
-                if(f==="day") return d.valid_time.getDate().toString().padStart(2,"0");
-                if(f==="hour") return d.valid_time.getHours().toString().padStart(2,"0");
-                return "";
-              })
-            )].map(v => <option key={v} value={v}>{f==="hour"?v+":00":v}</option>)}
-          </select>
-        ))}
+        <input
+          type="date"
+          name="fecha"
+          value={filters.fecha}
+          onChange={handleFilterChange}
+          className="filter-input"
+        />
+        <input
+          type="text"
+          name="lugar"
+          placeholder="Buscar por lugar..."
+          value={filters.lugar}
+          onChange={handleFilterChange}
+          className="filter-input"
+        />
+        <select
+          name="variable"
+          value={filters.variable}
+          onChange={handleFilterChange}
+          className="filter-input"
+        >
+          <option value="">Todas las variables</option>
+          {[...new Set(data.map((d) => d.variable))].map((v) => (
+            <option key={v} value={v}>
+              {v}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* TABLA */}
+      {/* 🔹 TABLA MEJORADA */}
       <div className="data-table-container">
         <table className="climate-table">
           <thead>
             <tr>
-              <th>Fecha</th><th>Latitud</th><th>Longitud</th><th>Presión (sp)</th>
+              <th>Variable</th>
+              <th>Usuario</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Latitud</th>
+              <th>Longitud</th>
+              <th>Lugar</th>
+              <th>Acción</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.length>0 ? filteredData.slice(0,30).map((d,i)=>(
-              <tr key={i}>
-                <td>{d.valid_time.toLocaleString()}</td>
-                <td>{d.latitude.toFixed(4)}</td>
-                <td>{d.longitude.toFixed(4)}</td>
-                <td>{d.sp.toFixed(2)}</td>
+            {filteredData.length > 0 ? (
+              filteredData.slice(0, 30).map((d, i) => (
+                <React.Fragment key={i}>
+                  <tr>
+                    <td>{d.variable}</td>
+                    <td>{d.nombre}</td>
+                    <td>{d.fecha}</td>
+                    <td>{d.hora}</td>
+                    <td>{d.latitud}</td>
+                    <td>{d.longitud}</td>
+                    <td>{d.lugar}</td>
+                    <td>
+                      <button
+                        className="btn btn-more"
+                        onClick={() => setExpandedRow(expandedRow === i ? null : i)}
+                      >
+                        {expandedRow === i ? "Ocultar" : "Ver más"}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {expandedRow === i && (
+                    <tr className="expanded-row">
+                      <td colSpan="8">
+                        <div className="extra-info">
+                          <p><strong>Rol:</strong> {d.rol}</p>
+                          <p><strong>Email:</strong> {d.email}</p>
+                          <p><strong>Rango temporal:</strong> {d.rangoTemporal}</p>
+                          <p><strong>Valor actual:</strong> {d.valorActual} °C</p>
+                          <p><strong>Promedio:</strong> {d.promedio}</p>
+                          <p><strong>Máximo:</strong> {d.maximo}</p>
+                          <p><strong>Mínimo:</strong> {d.minimo}</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8">No hay datos disponibles.</td>
               </tr>
-            )) : <tr><td colSpan="4">No hay datos disponibles.</td></tr>}
+            )}
           </tbody>
         </table>
       </div>
@@ -154,10 +212,10 @@ export default function ClimateDashboard() {
       <div className="map-section" ref={mapRef}>
         <MapContainer center={[4.5, -74.2]} zoom={6} scrollWheelZoom={true}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {filteredData.map((d,i)=>(
+          {filteredData.map((d, i) => (
             <CircleMarker
               key={i}
-              center={[d.latitude,d.longitude]}
+              center={[parseFloat(d.latitud), parseFloat(d.longitud)]}
               radius={6}
               fillColor="#00bcd4"
               color="#333"
@@ -166,15 +224,23 @@ export default function ClimateDashboard() {
             >
               <Tooltip>
                 <div>
-                  <strong>{d.valid_time.toLocaleString()}</strong>
-                  <br/>Lat: {d.latitude.toFixed(3)}, Lon: {d.longitude.toFixed(3)}
-                  <br/>sp: {d.sp.toFixed(2)}
+                  <strong>{d.variable}</strong>
+                  <br />
+                  {d.lugar}
+                  <br />
+                  Valor actual: {d.valorActual} °C
                 </div>
               </Tooltip>
             </CircleMarker>
           ))}
         </MapContainer>
-      </div>
+      </div><br></br>
+      <center><div className="buttons">
+          <button className="btn btn-download" onClick={handleDownloadReport}>📥 Generar Reporte</button>
+          <button className="btn btn-back" onClick={() => navigate(-1)}>⬅️ Volver</button>
+        </div></center>
     </div>
   );
 }
+
+

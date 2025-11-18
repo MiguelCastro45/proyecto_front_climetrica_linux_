@@ -1,5 +1,4 @@
 // src/components/UserMapDashboard.jsx
-
 /**
  * ============================================================================
  * COMPONENTE PRINCIPAL: CLIMATE DASHBOARD
@@ -26,8 +25,11 @@ import "leaflet/dist/leaflet.css";
 import { Chart } from "chart.js/auto";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image-more";
 import "../styles/UserMapDashboard.css";
 import PolygonDrawer from './PolygonDrawer';
+import { saveClimateData } from '../api/Save_climate_data_helper';
+
 
 // ============================================================================
 // CONSTANTES GLOBALES
@@ -228,6 +230,47 @@ export default function ClimateDashboard({ currentUser }) {
   }, [currentUser]);
 
   /**
+   * EFECTO: Actualizar popup cuando cambie la variable activa
+   * Recarga los datos del punto seleccionado con la nueva variable
+   */
+  useEffect(() => {
+    async function updatePopupForNewVariable() {
+      // Solo actualizar si hay un punto seleccionado
+      if (!selectedPoint || !popupRef.current) return;
+
+      const { lat, lng, place } = selectedPoint;
+
+      // Obtener datos de la nueva variable
+      const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
+      const stats = computeStats(series);
+
+      // Actualizar datos seleccionados
+      const newData = {
+        lat: lat.toFixed(6),
+        lng: lng.toFixed(6),
+        place,
+        variable: activeVar,
+        unit: LAYER_DEFS[activeVar].legend.unit,
+        value: series[series.length - 1].value,
+        series,
+        mean: stats.mean,
+        max: stats.max,
+        min: stats.min,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      };
+      setSelectedData(newData);
+
+      // Re-abrir popup con nueva variable
+      openPopupAt(lat, lng, place, series);
+
+      console.log(`🔄 Popup actualizado para variable: ${activeVar}`);
+    }
+
+    updatePopupForNewVariable();
+  }, [activeVar]); // Se ejecuta cuando cambia la variable activa
+
+  /**
    * EFECTO: Cerrar sugerencias al hacer clic fuera del input de búsqueda
    * IMPORTANTE: No cerrar si el click es dentro del dropdown de sugerencias
    */
@@ -235,19 +278,19 @@ export default function ClimateDashboard({ currentUser }) {
     function handleClickOutside(event) {
       // No hacer nada si no hay sugerencias visibles
       if (!showSuggestions) return;
-      
+
       // Verificar si el click fue en el input de búsqueda
       if (searchRef.current && searchRef.current.contains(event.target)) {
         return; // No cerrar
       }
-      
+
       // Verificar si el click fue en el dropdown de sugerencias
       const suggestionDropdown = document.querySelector('.search-suggestions');
       if (suggestionDropdown && suggestionDropdown.contains(event.target)) {
         console.log('Click dentro del dropdown, no cerrar');
         return; // No cerrar
       }
-      
+
       // Si llegamos aquí, el click fue fuera - cerrar dropdown
       console.log('Click fuera del dropdown, cerrando...');
       setShowSuggestions(false);
@@ -384,29 +427,74 @@ export default function ClimateDashboard({ currentUser }) {
   /**
    * FUNCIÓN: Capturar snapshot del mapa como imagen
    * @returns {Promise<string|null>} Data URL de la imagen o null si falla
-   * 
-   * Utiliza html2canvas para convertir el mapa en una imagen PNG
+   *
+   * Utiliza dom-to-image-more para convertir el mapa en una imagen PNG
+   * Esta biblioteca maneja mejor las imágenes cross-origin (NASA GIBS tiles)
    */
   async function captureMapSnapshot() {
     try {
+      const map = mapRef.current;
       const mapElement = mapContainerRef.current;
-      if (!mapElement) return null;
+      if (!map || !mapElement) {
+        console.error('Mapa no disponible para captura');
+        return null;
+      }
 
-      // Esperar a que el mapa se estabilice
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Invalidar el tamaño del mapa para asegurar renderizado correcto
+      map.invalidateSize();
 
-      const canvas = await html2canvas(mapElement, {
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#1a1a1a',
-        scale: 2,
+      // Esperar a que todas las capas se carguen completamente
+      // Tiempo extendido para capas WMTS de NASA GIBS
+      console.log('⏳ Esperando carga de capas climáticas...');
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
+      console.log('📸 Capturando mapa con dom-to-image-more...');
+
+      // Usar dom-to-image-more que maneja mejor las imágenes cross-origin
+      const dataUrl = await domtoimage.toPng(mapElement, {
+        quality: 0.95,
+        bgcolor: '#1a1a1a',
+        width: mapElement.offsetWidth,
+        height: mapElement.offsetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+        },
+        // Filtrar elementos que puedan causar problemas
+        filter: (node) => {
+          // Excluir controles de zoom y atribución si causan problemas
+          if (node.classList) {
+            return !node.classList.contains('leaflet-control-container');
+          }
+          return true;
+        }
       });
 
-      return canvas.toDataURL('image/png');
+      console.log('✅ Mapa capturado exitosamente con dom-to-image-more');
+      return dataUrl;
     } catch (error) {
-      console.error('Error capturando mapa:', error);
-      return null;
+      console.error('❌ Error capturando mapa con dom-to-image-more:', error);
+
+      // Fallback: Intentar con html2canvas como alternativa
+      try {
+        const mapElement = mapContainerRef.current;
+        if (!mapElement) return null;
+
+        console.log('⚠️ Intentando captura alternativa con html2canvas...');
+
+        const canvas = await html2canvas(mapElement, {
+          useCORS: false,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#1a1a1a',
+          scale: 1,
+        });
+
+        return canvas.toDataURL('image/png');
+      } catch (fallbackError) {
+        console.error('Error en captura alternativa:', fallbackError);
+        return null;
+      }
     }
   }
 
@@ -793,16 +881,49 @@ export default function ClimateDashboard({ currentUser }) {
   }
 
   /**
+   * FUNCIÓN: Limpiar todos los marcadores y popups del mapa
+   * Elimina completamente todos los elementos del mapa
+   */
+  function clearAllMapMarkers() {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Cerrar y eliminar todos los popups
+    map.closePopup();
+    map.eachLayer((layer) => {
+      // No eliminar las capas base (TileLayer)
+      if (layer instanceof L.Marker || layer instanceof L.Popup || layer instanceof L.Polygon || layer instanceof L.Polyline) {
+        map.removeLayer(layer);
+      }
+    });
+
+    // Limpiar referencias
+    popupRef.current = null;
+    setSelectedPoint(null);
+    setSelectedData(null);
+    setSelectedPointsHistory([]);
+
+    console.log('✅ Todos los marcadores y popups eliminados del mapa');
+  }
+
+  /**
    * FUNCIÓN: Limpiar polígono del mapa
-   * Llama a la función global expuesta por PolygonDrawer
+   * Llama a la función global expuesta por PolygonDrawer y limpia todo
    */
   function handleClearPolygon() {
+    // Limpiar polígono usando PolygonDrawer
     if (window.__clearPolygon) {
       window.__clearPolygon();
-      setHasPolygon(false);
-      setPolygonData(null);
-      console.log('Polígono eliminado del mapa');
     }
+
+    // Limpiar estados
+    setHasPolygon(false);
+    setPolygonData(null);
+
+    // Limpiar todos los marcadores y popups
+    clearAllMapMarkers();
+
+    console.log('🗑️ Polígono y todos los marcadores eliminados');
   }
 
   /**
@@ -811,32 +932,20 @@ export default function ClimateDashboard({ currentUser }) {
    */
   function handleClearAll() {
     console.log('🗑️ Limpiando todo del mapa...');
-    
+
     // Limpiar polígono si existe
     if (window.__clearPolygon) {
       window.__clearPolygon();
-      setHasPolygon(false);
-      setPolygonData(null);
-      console.log('✅ Polígono eliminado');
     }
-    
-    // Cerrar popup si está abierto
-    const map = mapRef.current;
-    if (map) {
-      try {
-        map.closePopup();
-        console.log('✅ Popup cerrado');
-      } catch (e) {
-        console.log('No había popup abierto');
-      }
-    }
-    
-    // Limpiar estado de punto seleccionado
-    setSelectedPoint(null);
-    setSelectedData(null);
-    popupRef.current = null;
-    
-    console.log('✅ Todo limpiado del mapa');
+
+    // Limpiar estados de polígono
+    setHasPolygon(false);
+    setPolygonData(null);
+
+    // Limpiar TODOS los marcadores, popups y elementos del mapa
+    clearAllMapMarkers();
+
+    console.log('✅ Todo limpiado: polígonos, puntos, popups y marcadores');
   }
 
   /**
@@ -1031,130 +1140,200 @@ export default function ClimateDashboard({ currentUser }) {
   /**
    * FUNCIÓN: Descargar datos del modal en formato JSON
    * Incluye metadatos completos del usuario, consulta y datos climatológicos
+   * SOLO DESCARGA - No guarda en base de datos
    */
-  async function downloadModalJSON() {
-    if (!selectedData || !modalStartDate || !modalEndDate) return;
-    
-    const lat = parseFloat(selectedData.lat);
-    const lng = parseFloat(selectedData.lng);
-    const days = calculateDaysDifference(modalStartDate, modalEndDate);
-    const series = await fetchSeriesFor(activeVar, lat, lng, days);
-    const stats = computeStats(series);
-    
-    const dataWithMetadata = {
-      usuario: {
-        nombre: userInfo.nombre,
-        rol: userInfo.rol,
-        email: userInfo.email,
-        fechaDescarga: new Date().toISOString(),
-        horaDescarga: new Date().toLocaleTimeString('es-ES')
-      },
-      consulta: {
-        variable: activeVar,
-        lugar: selectedData.place,
-        coordenadas: polygonData ? {
-          tipo: "Polígono",
-          centro: { latitud: selectedData.lat, longitud: selectedData.lng },
-          puntosMuestreados: polygonData.samplePoints.map(([lat, lng]) => ({ 
-            latitud: lat.toFixed(6), 
-            longitud: lng.toFixed(6) 
-          }))
-        } : {
-          tipo: "Punto único",
-          latitud: selectedData.lat,
-          longitud: selectedData.lng
-        },
-        rangoTemporal: `${days} dia${days > 1 ? 's' : ''}`,
-        fechaInicio: series[0]?.date,
-        fechaFin: series[series.length - 1]?.date
-      },
-      estadoDatos: {
-        mensaje: getDataStatusMessageForDisplay(),
-        enTiempoReal: isDataLive(),
-        fechaDatos: dataTimestamp ? dataTimestamp.toISOString() : null,
-        fuenteAPI: LAYER_DEFS[activeVar]?.apiName || "Desconocido"
-      },
-      datosClimaticos: {
-        valorActual: series[series.length - 1].value,
-        unidad: selectedData.unit,
-        estadisticas: {
-          promedio: stats.mean,
-          maximo: stats.max,
-          minimo: stats.min
-        },
-        serieTemporal: series
+        async function downloadModalJSON() {
+        if (!selectedData || !modalStartDate || !modalEndDate) return;
+
+        const lat = parseFloat(selectedData.lat);
+        const lng = parseFloat(selectedData.lng);
+        const days = calculateDaysDifference(modalStartDate, modalEndDate);
+        const series = await fetchSeriesFor(activeVar, lat, lng, days);
+        const stats = computeStats(series);
+
+        // Preparar datos para descarga (sin guardar en BD)
+        const dataWithMetadata = {
+          usuario: {
+            nombre: userInfo.nombre,
+            rol: userInfo.rol,
+            email: userInfo.email,
+            fechaDescarga: new Date().toISOString(),
+            horaDescarga: new Date().toLocaleTimeString('es-ES')
+          },
+          consulta: {
+            variable: activeVar,
+            lugar: selectedData.place,
+            coordenadas: polygonData ? {
+              tipo: "Poligono",
+              centro: { latitud: selectedData.lat, longitud: selectedData.lng },
+              puntosMuestreados: polygonData.samplePoints.map(([lat, lng]) => ({
+                latitud: lat.toFixed(6),
+                longitud: lng.toFixed(6)
+              }))
+            } : {
+              tipo: "Punto unico",
+              latitud: selectedData.lat,
+              longitud: selectedData.lng
+            },
+            rangoTemporal: `${days} dia${days > 1 ? 's' : ''}`,
+            fechaInicio: series[0]?.date,
+            fechaFin: series[series.length - 1]?.date
+          },
+          estadoDatos: {
+            mensaje: getDataStatusMessageForDisplay(),
+            enTiempoReal: isDataLive(),
+            fechaDatos: dataTimestamp ? dataTimestamp.toISOString() : null,
+            fuenteAPI: LAYER_DEFS[activeVar]?.apiName || "Desconocido"
+          },
+          datosClimaticos: {
+            valorActual: series[series.length - 1].value,
+            unidad: selectedData.unit,
+            estadisticas: {
+              promedio: stats.mean,
+              maximo: stats.max,
+              minimo: stats.min
+            },
+            serieTemporal: series
+          }
+        };
+
+        const blob = new Blob([JSON.stringify(dataWithMetadata, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `clima_${activeVar.replace(/\s+/g, '_')}_${days}dias_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
       }
-    };
-    
-    const blob = new Blob([JSON.stringify(dataWithMetadata, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `clima_modal_${activeVar.replace(/\s+/g, '_')}_${days}dias_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-  }
 
   /**
    * FUNCIÓN: Descargar datos del panel en formato JSON
-   * Similar a downloadModalJSON pero usa fechas del panel principal
+   * SOLO DESCARGA - No guarda en base de datos
    */
-  async function downloadJSON() {
-    if (!selectedData) return;
-    
-    const lat = parseFloat(selectedData.lat);
-    const lng = parseFloat(selectedData.lng);
-    const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
-    const stats = computeStats(series);
-    
-    const dataWithMetadata = {
-      usuario: {
-        nombre: userInfo.nombre,
-        rol: userInfo.rol,
-        email: userInfo.email,
-        fechaDescarga: new Date().toISOString(),
-        horaDescarga: new Date().toLocaleTimeString('es-ES')
-      },
-      consulta: {
-        variable: activeVar,
-        lugar: selectedData.place,
-        coordenadas: polygonData ? {
-          tipo: "Polígono",
-          centro: { latitud: selectedData.lat, longitud: selectedData.lng },
-          puntosMuestreados: polygonData.samplePoints.map(([lat, lng]) => ({ 
-            latitud: lat.toFixed(6), 
-            longitud: lng.toFixed(6) 
-          }))
-        } : {
-          tipo: "Punto único",
-          latitud: selectedData.lat,
-          longitud: selectedData.lng
-        },
-        rangoTemporal: `${downloadDateRange} dia${downloadDateRange > 1 ? 's' : ''}`,
-        fechaInicio: series[0]?.date,
-        fechaFin: series[series.length - 1]?.date
-      },
-      estadoDatos: {
-        mensaje: getDataStatusMessageForDisplay(),
-        enTiempoReal: isDataLive(),
-        fechaDatos: dataTimestamp ? dataTimestamp.toISOString() : null,
-        fuenteAPI: LAYER_DEFS[activeVar]?.apiName || "Desconocido"
-      },
-      datosClimaticos: {
-        valorActual: series[series.length - 1].value,
-        unidad: selectedData.unit,
-        estadisticas: {
-          promedio: stats.mean,
-          maximo: stats.max,
-          minimo: stats.min
-        },
-        serieTemporal: series
+        async function downloadJSON() {
+        if (!selectedData) return;
+
+        const lat = parseFloat(selectedData.lat);
+        const lng = parseFloat(selectedData.lng);
+        const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
+        const stats = computeStats(series);
+
+        // Preparar datos para descarga (sin guardar en BD)
+        const dataWithMetadata = {
+          usuario: {
+            nombre: userInfo.nombre,
+            rol: userInfo.rol,
+            email: userInfo.email,
+            fechaDescarga: new Date().toISOString(),
+            horaDescarga: new Date().toLocaleTimeString('es-ES')
+          },
+          consulta: {
+            variable: activeVar,
+            lugar: selectedData.place,
+            coordenadas: polygonData ? {
+              tipo: "Poligono",
+              centro: { latitud: selectedData.lat, longitud: selectedData.lng },
+              puntosMuestreados: polygonData.samplePoints.map(([lat, lng]) => ({
+                latitud: lat.toFixed(6),
+                longitud: lng.toFixed(6)
+              }))
+            } : {
+              tipo: "Punto unico",
+              latitud: selectedData.lat,
+              longitud: selectedData.lng
+            },
+            rangoTemporal: `${downloadDateRange} dia${downloadDateRange > 1 ? 's' : ''}`,
+            fechaInicio: series[0]?.date,
+            fechaFin: series[series.length - 1]?.date
+          },
+          estadoDatos: {
+            mensaje: getDataStatusMessageForDisplay(),
+            enTiempoReal: isDataLive(),
+            fechaDatos: dataTimestamp ? dataTimestamp.toISOString() : null,
+            fuenteAPI: LAYER_DEFS[activeVar]?.apiName || "Desconocido"
+          },
+          datosClimaticos: {
+            valorActual: series[series.length - 1].value,
+            unidad: selectedData.unit,
+            estadisticas: {
+              promedio: stats.mean,
+              maximo: stats.max,
+              minimo: stats.min
+            },
+            serieTemporal: series
+          }
+        };
+
+        const blob = new Blob([JSON.stringify(dataWithMetadata, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `clima_${activeVar.replace(/\s+/g, '_')}_${downloadDateRange}dias_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
       }
-    };
-    
-    const blob = new Blob([JSON.stringify(dataWithMetadata, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `clima_${activeVar.replace(/\s+/g, '_')}_${downloadDateRange}dias_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
+
+  /**
+   * FUNCIÓN: Guardar en Mis Registros (sin descargar)
+   * Guarda los datos actuales en MongoDB sin descargar archivo
+   */
+  async function saveToMyRecords() {
+    if (!selectedData) {
+      alert('No hay datos seleccionados para guardar');
+      return;
+    }
+
+    // Mostrar loading
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'pdf-loading';
+    loadingDiv.textContent = 'Guardando en tus registros...';
+    document.body.appendChild(loadingDiv);
+
+    try {
+      const lat = parseFloat(selectedData.lat);
+      const lng = parseFloat(selectedData.lng);
+      const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
+      const stats = computeStats(series);
+
+      // Preparar datos para guardar
+      const dataToSave = {
+        lat: selectedData.lat,
+        lng: selectedData.lng,
+        place: selectedData.place,
+        variable: activeVar,
+        unit: LAYER_DEFS[activeVar].legend.unit,
+        value: series[series.length - 1].value,
+        series: series,
+        mean: stats.mean,
+        max: stats.max,
+        min: stats.min,
+        dataStatusMessage: getDataStatusMessage(),
+        isLive: isDataLive(),
+        dataTimestamp: dataTimestamp,
+        apiSource: LAYER_DEFS[activeVar]?.apiName,
+        rangoTemporal: `${downloadDateRange} día${downloadDateRange > 1 ? 's' : ''}`
+      };
+
+      // Guardar en la base de datos
+      const saveResult = await saveClimateData(
+        dataToSave,
+        {
+          ...currentUser,
+          nombre: userInfo.nombre,
+          rol: userInfo.rol
+        },
+        polygonData
+      );
+
+      if (saveResult.success) {
+        alert('✅ Datos guardados exitosamente en tus registros');
+        console.log('✅ Datos guardados con ID:', saveResult.data._id);
+      } else {
+        alert('❌ Error al guardar: ' + (saveResult.error || 'Error desconocido'));
+        console.error('❌ Error guardando en BD:', saveResult.error);
+      }
+    } catch (error) {
+      console.error('Error guardando datos:', error);
+      alert('Error al guardar los datos. Por favor intente nuevamente.');
+    } finally {
+      document.body.removeChild(loadingDiv);
+    }
   }
 
   /**
@@ -1180,58 +1359,59 @@ export default function ClimateDashboard({ currentUser }) {
   /**
    * FUNCIÓN: Descargar PDF del modal
    * Genera un PDF con los datos de la serie temporal ampliada
+   * SOLO DESCARGA - No guarda en base de datos
    */
-  async function downloadModalPDF() {
-    if (!selectedData || !modalStartDate || !modalEndDate) return;
+      async function downloadModalPDF() {
+      if (!selectedData || !modalStartDate || !modalEndDate) return;
 
-    // Mostrar indicador de carga
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'pdf-loading';
-    loadingDiv.textContent = 'Generando PDF...';
-    document.body.appendChild(loadingDiv);
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'pdf-loading';
+      loadingDiv.textContent = 'Generando PDF...';
+      document.body.appendChild(loadingDiv);
 
-    try {
-      const lat = parseFloat(selectedData.lat);
-      const lng = parseFloat(selectedData.lng);
-      const days = calculateDaysDifference(modalStartDate, modalEndDate);
-      const series = await fetchSeriesFor(activeVar, lat, lng, days);
-      const stats = computeStats(series);
+      try {
+        const lat = parseFloat(selectedData.lat);
+        const lng = parseFloat(selectedData.lng);
+        const days = calculateDaysDifference(modalStartDate, modalEndDate);
+        const series = await fetchSeriesFor(activeVar, lat, lng, days);
+        const stats = computeStats(series);
 
-      await generatePDFDocument(series, stats, days);
-    } catch (error) {
-      console.error('Error generando PDF:', error);
-      alert('Error al generar el PDF. Por favor intente nuevamente.');
-    } finally {
-      document.body.removeChild(loadingDiv);
+        await generatePDFDocument(series, stats, days);
+      } catch (error) {
+        console.error('Error generando PDF:', error);
+        alert('Error al generar el PDF. Por favor intente nuevamente.');
+      } finally {
+        document.body.removeChild(loadingDiv);
+      }
     }
-  }
 
   /**
    * FUNCIÓN: Descargar PDF del panel principal
-   * Similar a downloadModalPDF pero usa el rango de fechas del panel
+   * SOLO DESCARGA - No guarda en base de datos
    */
   async function downloadPDF() {
-    if (!selectedData) return;
+  if (!selectedData) return;
 
-    const loadingDiv = document.createElement('div');
-    loadingDiv.className = 'pdf-loading';
-    loadingDiv.textContent = 'Generando PDF...';
-    document.body.appendChild(loadingDiv);
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'pdf-loading';
+  loadingDiv.textContent = 'Generando PDF...';
+  document.body.appendChild(loadingDiv);
 
-    try {
-      const lat = parseFloat(selectedData.lat);
-      const lng = parseFloat(selectedData.lng);
-      const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
-      const stats = computeStats(series);
+  try {
+    const lat = parseFloat(selectedData.lat);
+    const lng = parseFloat(selectedData.lng);
+    const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
+    const stats = computeStats(series);
 
-      await generatePDFDocument(series, stats, downloadDateRange);
-    } catch (error) {
-      console.error('Error generando PDF:', error);
-      alert('Error al generar el PDF. Por favor intente nuevamente.');
-    } finally {
-      document.body.removeChild(loadingDiv);
-    }
+    // Generar PDF
+    await generatePDFDocument(series, stats, downloadDateRange);
+  } catch (error) {
+    console.error('Error generando PDF:', error);
+    alert('Error al generar el PDF. Por favor intente nuevamente.');
+  } finally {
+    document.body.removeChild(loadingDiv);
   }
+}
 
   /**
    * FUNCIÓN: Generar documento PDF completo
@@ -2317,11 +2497,14 @@ export default function ClimateDashboard({ currentUser }) {
       </div>
 
       {/* ========================================
-          BOTONES DE DESCARGA
+          BOTONES DE DESCARGA Y GUARDADO
           ======================================== */}
       <div className="um-buttons">
-        <button className="um-btn" onClick={downloadJSON}>Descargar JSON</button>
-        <button className="um-btn danger" onClick={downloadPDF}>Descargar PDF</button>
+        <button className="um-btn" onClick={saveToMyRecords} title="Guardar en base de datos sin descargar">
+          💾 Guardar en mis registros
+        </button>
+        <button className="um-btn" onClick={downloadJSON}>📥 Descargar JSON</button>
+        <button className="um-btn danger" onClick={downloadPDF}>📄 Descargar PDF</button>
       </div>
 
       {/* ========================================

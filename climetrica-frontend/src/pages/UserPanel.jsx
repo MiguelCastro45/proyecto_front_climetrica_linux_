@@ -22,6 +22,19 @@ export default function UserPanel() {
     password: "",
   });
 
+  //hora
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentTime(new Date());
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
+
   // Función para mostrar notificaciones
   const showNotification = (type, title, message) => {
     setNotification({ type, title, message });
@@ -169,9 +182,16 @@ export default function UserPanel() {
             <div className="welcome-card">
               <h2>Bienvenido <br />{user.first_name} {user.last_name}</h2>
               <p>Rol: {user.role}</p>
+              <button className="btn btn-blue" onClick={handleLogout}>
+                Configurar Cuenta
+              </button>
               <button className="btn btn-red" onClick={handleLogout}>
                 Cerrar sesión
               </button>
+              <p>
+                {currentTime.toLocaleDateString()} <br />
+                {currentTime.toLocaleTimeString()}
+              </p>    
             </div>
           )}
 
@@ -180,8 +200,11 @@ export default function UserPanel() {
               <button className="btn btn-blue" onClick={() => navigate("/climate")}>
                 Ver datos climáticos
               </button>
+              <button className="btn btn-blue" onClick={() => navigate("/upload")}>
+                Cultivos
+              </button>
               <button className="btn btn-green" onClick={() => navigate("/upload")}>
-                Subir dataset
+                Informacion General
               </button>
             </div>
           )}
@@ -223,7 +246,7 @@ export default function UserPanel() {
                         <td>{u.phone}</td>
                         <td>
                           <button
-                            className="btn btn-yellow"
+                            className="btn btn-blue"
                             onClick={() => openEdit(u)}
                           >
                             ✏️ Editar

@@ -34,8 +34,19 @@ def register(request):
         print("BODY RECIBIDO:", body)
 
         email = body.get("email")
-        if users_col.find_one({"email": email}):
-            return JsonResponse({"error": "Email ya registrado"}, status=400)
+        identification = body.get("identification")
+
+        # Validar email duplicado (case-insensitive)
+        email_lower = email.lower() if email else None
+        existing_email = users_col.find_one({"email": {"$regex": f"^{email_lower}$", "$options": "i"}})
+        if existing_email:
+            return JsonResponse({"error": "Ya existe un usuario registrado con ese correo electrónico"}, status=400)
+
+        # Validar identificación duplicada
+        if identification:
+            existing_identification = users_col.find_one({"identification": identification})
+            if existing_identification:
+                return JsonResponse({"error": "Ya existe un usuario registrado con esa identificación"}, status=400)
 
         password_hash = hash_password(body.get("password"))
 
@@ -44,7 +55,7 @@ def register(request):
             "last_name": body.get("last_name"),
             "email": email,
             "phone": body.get("phone"),
-            "identification": body.get("identification"),
+            "identification": identification,
             "role": body.get("role", "productor"),
             "status": "active",
             "password_hash": password_hash,
@@ -75,7 +86,11 @@ def login(request):
         email = body.get("email")
         password = body.get("password")
 
-        user = users_col.find_one({"email": email})
+        # Convertir email a minúsculas para búsqueda case-insensitive
+        email_lower = email.lower() if email else None
+
+        # Usar regex case-insensitive para búsqueda de email
+        user = users_col.find_one({"email": {"$regex": f"^{email_lower}$", "$options": "i"}})
         if not user or not check_password(password, user["password_hash"]):
             return JsonResponse({"error": "Credenciales inválidas"}, status=401)
 
@@ -171,10 +186,145 @@ def delete_user(request, user_id):
     
 
 def get_climate_data(request):
+    """
+    Obtener datos climáticos con filtro opcional por usuario
+    Query params: ?userId=<id>
+    """
     try:
-        data = list(climate_data_col.find({}, {'_id': 0}))
+        # Obtener filtro de usuario si existe
+        user_id = request.GET.get('userId')
+
+        # Construir query
+        query = {}
+        if user_id:
+            query['usuario._id'] = user_id
+
+        # Obtener datos con _id incluido para poder eliminar
+        data = []
+        for doc in climate_data_col.find(query):
+            doc['_id'] = str(doc['_id'])  # Convertir ObjectId a string
+            data.append(doc)
+
         return JsonResponse({"status": "success", "data": data}, safe=False)
     except Exception as e:
         import traceback
         print("❌ ERROR en get_climate_data:", traceback.format_exc())
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@csrf_exempt
+@jwt_required
+def save_climate_data(request):
+    """
+    Guardar nuevos datos climáticos en MongoDB
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        body = json.loads(request.body)
+
+        # Validar datos requeridos
+        if not body.get("usuario") or not body.get("consulta") or not body.get("datosClimaticos"):
+            return JsonResponse({"error": "Faltan datos requeridos"}, status=400)
+
+        # DEBUG: Verificar datos del usuario que se van a guardar
+        print(f"\n{'='*80}")
+        print(f"💾 DEBUG - save_climate_data - Guardando registro:")
+        print(f"{'='*80}")
+        print(f"Usuario recibido del frontend:")
+        import pprint
+        pprint.pprint(body.get("usuario", {}))
+        print(f"\nUsuario del JWT (quien está guardando):")
+        print(f"  user_id: {request.user.get('user_id')}")
+        print(f"  email: {request.user.get('email')}")
+        print(f"  role: {request.user.get('role')}")
+
+        # SOLUCIÓN: Sobrescribir el _id del usuario con el del JWT para garantizar consistencia
+        # Esto asegura que siempre se guarde el ID correcto del usuario autenticado
+        body["usuario"]["_id"] = request.user.get("user_id")
+
+        print(f"\n✅ _id del usuario sobrescrito con el del JWT: {body['usuario']['_id']}")
+        print(f"{'='*80}\n")
+
+        # Agregar timestamp de creación
+        body["createdAt"] = datetime.utcnow().isoformat()
+
+        # Insertar en MongoDB
+        result = climate_data_col.insert_one(body)
+
+        # Preparar respuesta
+        body["_id"] = str(result.inserted_id)
+
+        return JsonResponse({
+            "status": "success",
+            "message": "Datos guardados exitosamente",
+            "data": body
+        }, status=201)
+
+    except Exception as e:
+        import traceback
+        print("❌ ERROR en save_climate_data:", traceback.format_exc())
+        return JsonResponse({"error": f"Error al guardar datos: {str(e)}"}, status=500)
+
+
+@csrf_exempt
+@jwt_required
+def delete_climate_data(request, record_id):
+    """
+    Eliminar un registro de datos climáticos por ID
+    Solo el usuario dueño del registro o un admin puede eliminar
+    """
+    if request.method != "DELETE":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        # Obtener el registro para verificar permisos
+        record = climate_data_col.find_one({"_id": ObjectId(record_id)})
+
+        if not record:
+            return JsonResponse({"error": "Registro no encontrado"}, status=404)
+
+        # Debugging completo del registro
+        print(f"\n{'='*80}")
+        print(f"🔍 DEBUG - ESTRUCTURA COMPLETA DEL REGISTRO:")
+        print(f"{'='*80}")
+        print(f"Record ID: {record_id}")
+        print(f"\nUsuario completo en record:")
+        import pprint
+        pprint.pprint(record.get("usuario", {}))
+
+        # Verificar que el usuario es dueño del registro o es admin
+        user_id = str(request.user.get("user_id"))  # Convertir a string
+        record_owner_id = str(record.get("usuario", {}).get("_id", ""))  # Convertir a string
+        is_admin = request.user.get("role") == "admin"
+
+        # Debugging: imprimir IDs para verificar comparación
+        print(f"\n🔍 DEBUG - Verificando permisos:")
+        print(f"   User ID del JWT: '{user_id}' (tipo: {type(user_id)}, len: {len(user_id)})")
+        print(f"   Owner ID del registro: '{record_owner_id}' (tipo: {type(record_owner_id)}, len: {len(record_owner_id)})")
+        print(f"   Es admin: {is_admin}")
+        print(f"   ¿Son iguales?: {user_id == record_owner_id}")
+        print(f"   Comparación byte a byte: {[ord(c) for c in user_id[:10]]} vs {[ord(c) for c in record_owner_id[:10]]}")
+        print(f"{'='*80}\n")
+
+        # Comparar como strings para evitar problemas de tipo
+        if user_id != record_owner_id and not is_admin:
+            error_msg = f"No tiene permisos para eliminar este registro. Su ID: {user_id}, Owner ID: {record_owner_id}"
+            print(f"❌ {error_msg}")
+            return JsonResponse({"error": error_msg}, status=403)
+
+        # Eliminar registro
+        result = climate_data_col.delete_one({"_id": ObjectId(record_id)})
+
+        if result.deleted_count == 0:
+            return JsonResponse({"error": "No se pudo eliminar el registro"}, status=500)
+
+        print(f"✅ Registro {record_id} eliminado por usuario {user_id}")
+        return JsonResponse({"message": "Registro eliminado exitosamente", "deleted_count": result.deleted_count}, status=200)
+
+    except Exception as e:
+        import traceback
+        print("❌ ERROR en delete_climate_data:", traceback.format_exc())
+        return JsonResponse({"error": f"Error al eliminar registro: {str(e)}"}, status=500)
+    

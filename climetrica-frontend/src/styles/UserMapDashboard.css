@@ -16,58 +16,6 @@
 }
 
 /* ============================================
-   CONTROLES DE ZOOM PERSONALIZADOS - MEJORADOS
-   ============================================ */
-.leaflet-control-zoom {
-  border: none !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
-  border-radius: 12px !important;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.leaflet-control-zoom a {
-  width: 42px !important;
-  height: 42px !important;
-  line-height: 42px !important;
-  font-size: 22px !important;
-  font-weight: 700 !important;
-  color: #1f2937 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-  border: none !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.2s ease !important;
-  text-shadow: none !important;
-}
-
-.leaflet-control-zoom a:last-child {
-  border-bottom: none !important;
-  border-radius: 0 0 12px 12px !important;
-}
-
-.leaflet-control-zoom a:first-child {
-  border-radius: 12px 12px 0 0 !important;
-}
-
-.leaflet-control-zoom a:hover {
-  background: rgba(59, 130, 246, 0.15) !important;
-  color: #2563eb !important;
-  transform: scale(1.05);
-}
-
-.leaflet-control-zoom a:active {
-  background: rgba(59, 130, 246, 0.25) !important;
-  transform: scale(0.98);
-}
-
-.leaflet-bar a {
-  border-bottom: none !important;
-}
-
-/* ============================================
    BANNER DE ESTADO DE DATOS
    ============================================ */
 .data-status-banner {
@@ -75,17 +23,17 @@
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 10px 18px;
-  border-radius: 10px;
+  padding: 8px 16px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  backdrop-filter: blur(15px);
+  gap: 4px;
+  backdrop-filter: blur(10px);
 }
 
 .data-status-banner.live {
@@ -101,16 +49,14 @@
 }
 
 .data-status-main {
-  font-size: 14px;
-  font-weight: 700;
-  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .data-status-sub {
   font-size: 11px;
-  opacity: 0.95;
+  opacity: 0.9;
   font-weight: 500;
-  text-align: center;
 }
 
 /* ============================================
@@ -136,7 +82,7 @@
               0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1.5px solid rgba(255, 255, 255, 0.5);
   overflow-x: auto;
-  overflow-y: visible; /* CAMBIADO: permite que el dropdown sea visible */
+  overflow-y: hidden;
   max-height: 50px;
   flex-wrap: nowrap;
   max-width: 95%;
@@ -174,26 +120,8 @@
 }
 
 /* ============================================
-   CONTENEDOR DE BOTONES DE DIBUJAR
-   ============================================ */
-.draw-buttons-container {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-/* ============================================
    INPUT DE BÚSQUEDA - MEJORADO
    ============================================ */
-.search-container {
-  position: relative;
-  display: inline-block;
-  flex-shrink: 0;
-  z-index: 100000; /* Muy alto para asegurar que el dropdown esté sobre todo */
-  /* IMPORTANTE: NO agregar overflow: hidden aquí, cortaría el dropdown */
-}
-
 .search-input,
 .um-var-selector input[type="text"] {
   background: rgba(255, 255, 255, 0.75);
@@ -221,216 +149,10 @@
 
 .search-input:focus,
 .um-var-selector input[type="text"]:focus {
-  background: rgba(255, 255, 255, 0.95); /* Más opaco cuando tiene foco */
-  border-color: #3b82f6; /* Borde azul sólido */
-  border-width: 2px; /* Borde más grueso */
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
-              0 4px 12px rgba(59, 130, 246, 0.1);
-  border-radius: 8px; /* Siempre con border-radius completo */
-}
-
-/* ============================================
-   DROPDOWN DE SUGERENCIAS - MEJORADO PARA MÁXIMA NITIDEZ
-   ============================================ */
-.search-suggestions {
-  position: fixed !important;
-  /* top y left se calculan dinámicamente en JavaScript */
-  background: #ffffff !important;
-  border: 2px solid #3b82f6 !important;
-  border-radius: 10px;
-  box-shadow: 
-    0 10px 30px rgba(59, 130, 246, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(59, 130, 246, 0.1) !important;
-  max-height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 999999 !important; /* Extremadamente alto - sobre todo el dashboard */
-  margin-top: 0;
-  animation: slideDownFade 0.15s ease-out;
-  pointer-events: auto;
-  
-  /* ========================================
-     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
-     ======================================== */
-  /* Forzar renderizado de texto nítido */
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  font-smoothing: antialiased !important;
-  text-rendering: optimizeLegibility !important;
-  
-  /* Prevenir sub-pixel rendering que causa borrosidad */
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-  perspective: 1000px !important;
-  -webkit-perspective: 1000px !important;
-  
-  /* Forzar aceleración de hardware sin transformaciones problemáticas */
-  will-change: opacity !important;
-  
-  /* Asegurar renderizado en pixels enteros */
-  transform-style: preserve-3d !important;
-  -webkit-transform-style: preserve-3d !important;
-  
-  /* Prevenir filtros que afectan la nitidez */
-  filter: none !important;
-  -webkit-filter: none !important;
-}
-
-@keyframes slideDownFade {
-  from {
-    opacity: 0;
-    transform: translateZ(0) translateY(-8px); /* Mantener translateZ para nitidez */
-  }
-  to {
-    opacity: 1;
-    transform: translateZ(0) translateY(0); /* Mantener translateZ para nitidez */
-  }
-}
-
-.search-suggestion-item {
-  display: flex;
-  align-items: center;
-  padding: 16px 18px;
-  cursor: pointer;
-  transition: background-color 0.15s ease, padding-left 0.15s ease; /* Solo transiciones que no afecten nitidez */
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #ffffff !important;
-  min-height: 64px;
-  
-  /* ========================================
-     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
-     ======================================== */
-  /* Forzar renderizado de texto nítido */
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  font-smoothing: antialiased !important;
-  text-rendering: optimizeLegibility !important;
-  
-  /* Prevenir sub-pixel rendering */
-  transform: translateZ(0) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-  
-  /* Remover will-change para evitar problemas de renderizado */
-  will-change: auto !important;
-}
-
-.search-suggestion-item:first-child {
-  border-radius: 10px 10px 0 0; /* Esquinas superiores redondeadas */
-}
-
-.search-suggestion-item:last-child {
-  border-bottom: none;
-  border-radius: 0 0 10px 10px; /* Esquinas inferiores redondeadas */
-}
-
-.search-suggestion-item:first-child:last-child {
-  border-radius: 10px; /* Si solo hay un item, todas las esquinas redondeadas */
-}
-
-.search-suggestion-item:hover {
-  background: linear-gradient(90deg, 
-    rgba(59, 130, 246, 0.12), 
-    rgba(147, 197, 253, 0.12)) !important;
-  padding-left: 22px;
-  /* REMOVIDO: transform que causaba borrosidad */
-}
-
-.search-suggestion-item:active {
-  background: linear-gradient(90deg, 
-    rgba(59, 130, 246, 0.18), 
-    rgba(147, 197, 253, 0.18)) !important;
-  /* REMOVIDO: transform scale que causaba borrosidad */
-}
-
-.suggestion-icon {
-  font-size: 26px;
-  margin-right: 16px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-  line-height: 1;
-  
-  /* Asegurar renderizado nítido del emoji */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.suggestion-content {
-  flex: 1;
-  overflow: hidden;
-}
-
-.suggestion-name {
-  /* Tamaño de fuente optimizado para renderizado nítido */
-  font-size: 13px !important;
-  color: #111827 !important;
-  font-weight: 500 !important; /* Aumentado de 100 a 500 para mejor legibilidad */
-  white-space: normal;
-  word-wrap: break-word;
-  line-height: 1.5;
-  margin-bottom: 4px;
-  letter-spacing: -0.01em;
-  
-  /* ========================================
-     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
-     ======================================== */
-  /* Forzar renderizado de texto super nítido */
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  font-smoothing: antialiased !important;
-  text-rendering: optimizeLegibility !important;
-  
-  /* Prevenir cualquier transformación */
-  transform: none !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-  
-  /* Asegurar pixels enteros */
-  transform-style: flat !important;
-  -webkit-transform-style: flat !important;
-}
-
-.suggestion-type {
-  font-size: 13px;
-  color: #6b7280 !important;
-  text-transform: capitalize;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  
-  /* ========================================
-     MEJORAS CRÍTICAS PARA NITIDEZ DEL TEXTO
-     ======================================== */
-  /* Forzar renderizado de texto super nítido */
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  font-smoothing: antialiased !important;
-  text-rendering: optimizeLegibility !important;
-  
-  /* Prevenir cualquier transformación */
-  transform: none !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-}
-
-/* Scrollbar para sugerencias */
-.search-suggestions::-webkit-scrollbar {
-  width: 8px;
-}
-
-.search-suggestions::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 0 0 10px 0;
-}
-
-.search-suggestions::-webkit-scrollbar-thumb {
-  background: #9ca3af;
-  border-radius: 4px;
-}
-
-.search-suggestions::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(64, 224, 208, 0.6);
+  box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.15),
+              0 4px 12px rgba(64, 224, 208, 0.1);
 }
 
 /* ============================================
@@ -443,7 +165,7 @@
   -webkit-backdrop-filter: blur(10px);
   border: 1.5px solid rgba(0, 0, 0, 0.15);
   color: #1f2937;
-  padding: 6px 32px 6px 12px;
+  padding: 6px 32px 6px 12px; /* Espacio para la flecha */
   border-radius: 8px;
   outline: none;
   font-weight: 600;
@@ -454,6 +176,8 @@
   max-width: 200px;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  /* Flecha personalizada */
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -466,7 +190,7 @@
 .control-select:hover,
 .um-var-selector select:hover {
   background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(64, 224, 208, 0.4);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
@@ -474,11 +198,12 @@
 .control-select:focus,
 .um-var-selector select:focus {
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(59, 130, 246, 0.6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15),
-              0 4px 12px rgba(59, 130, 246, 0.1);
+  border-color: rgba(64, 224, 208, 0.6);
+  box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.15),
+              0 4px 12px rgba(64, 224, 208, 0.1);
 }
 
+/* Opciones del select */
 .control-select option,
 .um-var-selector select option {
   color: #1f2937;
@@ -489,12 +214,12 @@
 
 .control-select option:hover,
 .um-var-selector select option:hover {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(64, 224, 208, 0.1);
 }
 
 .control-select option:checked,
 .um-var-selector select option:checked {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+  background: linear-gradient(135deg, rgba(59, 89, 152, 0.2), rgba(64, 224, 208, 0.2));
   font-weight: 600;
 }
 
@@ -538,6 +263,7 @@
               0 4px 12px rgba(59, 130, 246, 0.1);
 }
 
+/* Icono del calendario personalizado */
 .date-input::-webkit-calendar-picker-indicator,
 .um-var-selector input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
@@ -547,10 +273,14 @@
   padding: 2px;
   border-radius: 4px;
   transition: all 0.2s ease;
+  
+  /* Icono SVG personalizado */
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3e%3c/rect%3e%3cline x1='16' y1='2' x2='16' y2='6'%3e%3c/line%3e%3cline x1='8' y1='2' x2='8' y2='6'%3e%3c/line%3e%3cline x1='3' y1='10' x2='21' y2='10'%3e%3c/line%3e%3c/svg%3e");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  
+  /* Ocultar el icono por defecto */
   filter: none;
 }
 
@@ -561,6 +291,7 @@
   transform: scale(1.1);
 }
 
+/* Estilos para el dropdown del calendario (Chrome/Edge) */
 .date-input::-webkit-datetime-edit,
 .um-var-selector input[type="date"]::-webkit-datetime-edit {
   padding: 0;
@@ -609,11 +340,53 @@
   outline: none;
 }
 
+/* Para Firefox */
+.date-input::-moz-calendar-picker-indicator,
+.um-var-selector input[type="date"]::-moz-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  width: 18px;
+  height: 18px;
+}
+
+.date-input::-moz-calendar-picker-indicator:hover,
+.um-var-selector input[type="date"]::-moz-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 /* ============================================
-   BOTONES - TEMA GLASSMORPHISM
+   BADGE DE RANGO DE DÍAS
    ============================================ */
-.um-btn { 
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+.date-range-badge {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(59, 89, 152, 0.9), rgba(64, 224, 208, 0.9));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(59, 89, 152, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(59, 89, 152, 0.4);
+  }
+}
+
+/* ============================================
+   BOTONES - TEMA GLASSMORPHISM CON GRADIENTE AZUL-VERDE
+   ============================================ */
+.um-btn {
+  background: linear-gradient(135deg, rgba(59, 89, 152, 0.95), rgba(64, 224, 208, 0.95));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: #fff;
@@ -623,16 +396,16 @@
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.25);
   transition: all 0.2s ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.um-btn:hover { 
+.um-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(5, 150, 105, 1));
+  box-shadow: 0 6px 16px rgba(59, 89, 152, 0.35);
+  background: linear-gradient(135deg, rgba(59, 89, 152, 1), rgba(64, 224, 208, 1));
 }
 
 .um-btn:active {
@@ -642,13 +415,13 @@
 /* Botón de búsqueda */
 .btn-search {
   margin-left: 0;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95));
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  background: linear-gradient(135deg, rgba(59, 89, 152, 0.95), rgba(64, 224, 208, 0.95));
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.25);
 }
 
 .btn-search:hover {
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+  box-shadow: 0 6px 16px rgba(59, 89, 152, 0.35);
+  background: linear-gradient(135deg, rgba(59, 89, 152, 1), rgba(64, 224, 208, 1));
 }
 
 /* Botón de dibujar */
@@ -703,17 +476,6 @@
 .btn-clear-points:hover {
   box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
   background: linear-gradient(135deg, rgba(245, 158, 11, 1), rgba(217, 119, 6, 1));
-}
-
-/* Botón cerrar modal */
-.btn-close-modal {
-  background: linear-gradient(135deg, rgba(107, 114, 128, 0.95), rgba(75, 85, 99, 0.95));
-  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.25);
-}
-
-.btn-close-modal:hover {
-  box-shadow: 0 6px 16px rgba(107, 114, 128, 0.35);
-  background: linear-gradient(135deg, rgba(107, 114, 128, 1), rgba(75, 85, 99, 1));
 }
 
 /* ============================================
@@ -873,7 +635,7 @@
 }
 
 /* ============================================
-   MODAL - MEJORADO
+   MODAL
    ============================================ */
 .um-modal { 
   position: fixed;
@@ -894,25 +656,23 @@
 }
 
 .um-modal-card { 
-  width: 90%;
-  max-width: 1100px;
-  background: linear-gradient(180deg, rgba(10, 22, 40, 0.97), rgba(5, 13, 26, 0.97));
+  width: 88%;
+  max-width: 980px;
+  background: linear-gradient(180deg, rgba(10, 22, 40, 0.95), rgba(5, 13, 26, 0.95));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   color: #e6f4ff;
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: slideUp 0.3s ease;
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 @keyframes slideUp {
   from { 
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to { 
     opacity: 1;
@@ -924,81 +684,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.modal-close-btn {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #ff6b6b;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
   font-size: 18px;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
+}
+
+.um-modal-controls { 
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.modal-close-btn:hover {
-  background: rgba(239, 68, 68, 0.3);
-  transform: scale(1.1);
-}
-
-/* Información del modal */
-.um-modal-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.modal-info-item {
-  font-size: 13px;
-  color: #cfe8ff;
-  line-height: 1.6;
-}
-
-.modal-info-item strong {
-  color: #fff;
-  font-weight: 600;
-}
-
-/* Controles de fecha del modal */
-.um-modal-date-controls {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  flex-wrap: wrap;
-}
-
-.modal-date-group {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
-  flex: 1;
-  min-width: 200px;
+  color: #cfe8ff;
 }
 
 .modal-label {
@@ -1007,80 +709,48 @@
   font-weight: 600;
 }
 
-.modal-date-input {
+.modal-select {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.15);
   color: #e6f4ff;
-  padding: 8px 12px;
+  padding: 6px 28px 6px 8px;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
   box-shadow: 0 4px 14px rgba(2,6,23,0.6);
   outline: none;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  
+  /* Flecha personalizada para modal */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e6f4ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
 }
 
-.modal-date-input:hover {
+.modal-select:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255,255,255,0.25);
-}
-
-.modal-date-input:focus {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(59, 130, 246, 0.6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-.modal-date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.modal-date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
 }
 
 .um-modal-body { 
   display: flex;
   justify-content: center;
-  padding: 20px 0;
-  margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
+  padding: 10px 0;
 }
 
 .um-modal-footer { 
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding-top: 16px;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  flex-wrap: wrap;
-}
-
-/* Scrollbar del modal */
-.um-modal-card::-webkit-scrollbar {
-  width: 10px;
-}
-
-.um-modal-card::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-}
-
-.um-modal-card::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-}
-
-.um-modal-card::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================
@@ -1091,64 +761,17 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   color: white;
-  padding: 24px 48px;
-  border-radius: 16px;
+  padding: 20px 40px;
+  border-radius: 12px;
   z-index: 10000;
-  font-size: 18px;
-  font-weight: 700;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1.02);
-  }
-}
-
-/* ============================================
-   ESTILOS PARA POLÍGONO - MEJORADOS
-   ============================================ */
-.leaflet-interactive {
-  stroke-width: 4px !important;
-  stroke-opacity: 0.9 !important;
-}
-
-.leaflet-interactive.leaflet-polygon {
-  stroke: #3b82f6 !important;
-  stroke-width: 5px !important;
-  fill: rgba(59, 130, 246, 0.25) !important;
-  fill-opacity: 0.35 !important;
-}
-
-.leaflet-interactive.leaflet-polygon:hover {
-  stroke: #2563eb !important;
-  stroke-width: 6px !important;
-  fill: rgba(59, 130, 246, 0.35) !important;
-  fill-opacity: 0.45 !important;
-}
-
-/* Vértices del polígono */
-.leaflet-marker-icon {
-  background-color: #3b82f6 !important;
-  border: 3px solid #ffffff !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5) !important;
-}
-
-.leaflet-marker-icon:hover {
-  background-color: #2563eb !important;
-  transform: scale(1.2);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.7) !important;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ============================================
@@ -1200,6 +823,11 @@
     font-size: 12px;
     padding: 5px 12px;
   }
+
+  .date-range-badge {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1236,7 +864,7 @@
   .data-status-banner {
     top: 64px;
     font-size: 12px;
-    padding: 8px 14px;
+    padding: 6px 12px;
   }
 
   .data-status-main {
@@ -1263,19 +891,6 @@
   .um-var-selector input[type="date"] {
     min-width: 110px;
     max-width: 110px;
-  }
-
-  .um-modal-card {
-    width: 95%;
-    padding: 20px;
-  }
-
-  .um-modal-date-controls {
-    flex-direction: column;
-  }
-
-  .modal-date-group {
-    min-width: 100%;
   }
 }
 
@@ -1317,6 +932,11 @@
     font-size: 11px;
     padding: 5px 10px;
   }
+
+  .date-range-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
   
   .um-legend {
     bottom: auto;
@@ -1333,7 +953,7 @@
     top: 68px;
     max-width: 90%;
     font-size: 11px;
-    padding: 6px 12px;
+    padding: 6px 10px;
   }
 
   .data-status-main {
@@ -1343,28 +963,83 @@
   .data-status-sub {
     font-size: 9px;
   }
-
-  .um-modal-card {
-    width: 95%;
-    max-height: 95vh;
-  }
-
-  .um-modal-info {
-    grid-template-columns: 1fr;
-  }
-
-  .um-modal-footer {
-    flex-direction: column;
-  }
-
-  .um-modal-footer .um-btn {
-    width: 100%;
-  }
 }
 
 /* ============================================
    ANIMACIONES Y TRANSICIONES
    ============================================ */
+@keyframes pulse {
+  0% { 
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% { 
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+/* Scrollbar personalizado para modales */
+.um-modal-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.um-modal-card::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.um-modal-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.um-modal-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   AJUSTES FINALES Y UTILIDADES
+   ============================================ */
+
+/* Asegurar que los elementos flex no crezcan */
+.um-var-selector > * {
+  flex-shrink: 0;
+}
+
+/* Mejorar la legibilidad en inputs */
+.um-var-selector input,
+.um-var-selector select {
+  font-family: inherit;
+}
+
+/* Efecto de enfoque consistente */
+.um-var-selector input:focus,
+.um-var-selector select:focus,
+.um-var-selector button:focus {
+  outline: none;
+}
+
+/* Prevenir selección de texto en la barra */
+.um-var-selector {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+/* Permitir selección en inputs */
+.um-var-selector input,
+.um-var-selector select {
+  user-select: auto;
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+}
+
+/* Transiciones suaves */
 .um-var-selector input,
 .um-var-selector select,
 .um-var-selector button {
@@ -1382,28 +1057,143 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
 }
 
-/* Asegurar que los elementos flex no crezcan */
-.um-var-selector > * {
+/* Estilos adicionales para el autocompletado de búsqueda */
+/* Agregar estos estilos a tu archivo UserMapDashboard.css existente */
+
+.search-container {
+  position: relative;
+  display: inline-block;
+  width: auto;
+  z-index: 9999;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff !important;
+  border: 2px solid #333 !important;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3) !important;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 99999 !important;
+  margin-top: 0;
+  min-width: 300px;
+}
+
+.search-suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #ffffff !important;
+  min-height: 50px;
+}
+
+.search-suggestion-item:last-child {
+  border-bottom: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.search-suggestion-item:hover {
+  background-color: #e3f2fd !important;
+}
+
+.suggestion-icon {
+  font-size: 20px;
+  margin-right: 12px;
   flex-shrink: 0;
 }
 
-/* Mejorar la legibilidad en inputs */
-.um-var-selector input,
-.um-var-selector select {
-  font-family: inherit;
+.suggestion-content {
+  flex: 1;
+  overflow: hidden;
 }
 
-/* Prevenir selección de texto en la barra */
-.um-var-selector {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
+.suggestion-name {
+  font-size: 14px;
+  color: #000000 !important;
+  font-weight: 600;
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.4;
+  margin-bottom: 4px;
 }
 
-/* Permitir selección en inputs */
-.um-var-selector input,
-.um-var-selector select {
-  user-select: auto;
-  -webkit-user-select: auto;
-  -moz-user-select: auto;
+.suggestion-type {
+  font-size: 12px;
+  color: #666666 !important;
+  text-transform: capitalize;
+  font-weight: 400;
+}
+
+/* Ajustar el input para que funcione mejor con las sugerencias */
+.search-input {
+  border-radius: 8px;
+  transition: border-radius 0.2s ease;
+}
+
+.search-input:focus {
+  border-radius: 8px 8px 0 0;
+}
+
+/* Estilo para cuando hay sugerencias visibles */
+.search-container:has(.search-suggestions) .search-input {
+  border-radius: 8px 8px 0 0;
+  border-bottom-color: transparent;
+}
+
+/* Scrollbar personalizado para las sugerencias */
+.search-suggestions::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 0 8px 0;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Animación suave para la aparición de sugerencias */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-suggestions {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Responsive: ajustar para pantallas pequeñas */
+@media (max-width: 768px) {
+  .search-suggestions {
+    max-height: 200px;
+  }
+  
+  .suggestion-name {
+    font-size: 13px;
+  }
+  
+  .suggestion-type {
+    font-size: 11px;
+  }
 }

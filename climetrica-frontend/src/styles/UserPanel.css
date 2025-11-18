@@ -97,15 +97,18 @@
   margin: 5px 0;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-blue {
-  background: #007bff;
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
   color: white;
 }
 .btn-blue:hover {
-  background: #0056b3;
+  background: linear-gradient(135deg, #2d4373, #33c4b5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.3);
 }
 
 .btn-green {
@@ -254,15 +257,15 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #007bff; /* Fondo azul para los encabezados */
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
 }
 
 .users-table thead th {
-  background: #007bff;
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
   color: white;
   font-weight: bold;
   padding: 12px 8px;
-  border: 1px solid #0056b3;
+  border: 1px solid rgba(59, 89, 152, 0.5);
   text-align: center;
   position: sticky;
   top: 0;
@@ -277,7 +280,7 @@
 }
 
 .users-table tbody tr:hover {
-  background: #e3f2fd;
+  background: linear-gradient(90deg, rgba(59, 89, 152, 0.05), rgba(64, 224, 208, 0.05));
 }
 
 .users-table th,
@@ -339,11 +342,15 @@
 
 .modal-content h4 {
   margin: 0 0 25px 0;
-  color: #333;
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-size: 22px;
   font-weight: 600;
   text-align: center;
-  border-bottom: 3px solid #007bff;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(135deg, #3B5998, #40E0D0) 1;
   padding-bottom: 15px;
 }
 
@@ -368,8 +375,8 @@
 .edit-form input:focus,
 .edit-form select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #40E0D0;
+  box-shadow: 0 0 0 3px rgba(64, 224, 208, 0.15);
 }
 
 .edit-form input::placeholder {
@@ -414,14 +421,15 @@
 }
 
 .modal-actions .btn-blue {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
   color: white;
-  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(59, 89, 152, 0.3);
 }
 
 .modal-actions .btn-blue:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(59, 89, 152, 0.4);
+  background: linear-gradient(135deg, #2d4373, #33c4b5);
 }
 
 .modal-actions .btn-gray {

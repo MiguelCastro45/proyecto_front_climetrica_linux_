@@ -14,5 +14,7 @@ urlpatterns = [
     path('users/delete/<str:user_id>/', views.delete_user, name='delete_user'), # DELETE
 
     #Listar Datasets
-    path('api/climate-data/', views.get_climate_data, name='get_climate_data'),
+    path('api/climate-data/', views.get_climate_data, name='get_climate_data'),  # GET
+    path('api/climate-data/save/', views.save_climate_data, name='save_climate_data'),  # POST
+    path('api/climate-data/<str:record_id>/', views.delete_climate_data, name='delete_climate_data'),  # DELETE
 ]

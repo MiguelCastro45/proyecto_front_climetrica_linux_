@@ -28,3 +28,4 @@ def download_variable(variable):
     buffer.write(json.dumps(data, indent=2).encode('utf-8'))
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"{variable}_data.json", mimetype="application/json")
+

@@ -7,7 +7,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
 }
 
 .login-card {
@@ -38,8 +38,8 @@ body {
 
 .login-form input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+  border-color: #40E0D0;
+  box-shadow: 0 0 8px rgba(64, 224, 208, 0.5);
 }
 
 .btn {
@@ -58,12 +58,12 @@ body {
 }
 
 .btn-blue {
-  background: #3498db;
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
   color: #fff;
 }
 
 .btn-blue:hover {
-  background: #2980b9;
+  background: linear-gradient(135deg, #2d4373, #33c4b5);
 }
 
 .error {
@@ -80,15 +80,52 @@ body {
 .login-links button {
   background: none;
   border: none;
-  color: #3498db;
+  background: linear-gradient(135deg, #3B5998, #40E0D0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 3px 0;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
+  font-weight: 600;
 }
 
 .login-links button:hover {
   text-decoration: underline;
+}
+
+/* Sugerencias de email */
+.email-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.email-suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.email-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.email-suggestion-item:hover {
+  background: linear-gradient(90deg, rgba(59, 89, 152, 0.05), rgba(64, 224, 208, 0.05));
+  color: #3B5998;
 }
 
 /* Animación de entrada */

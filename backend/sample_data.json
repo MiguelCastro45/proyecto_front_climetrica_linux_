@@ -1,6 +1,0 @@
-[
-  { "variable": "temperature", "lat": 10.5, "lon": -74.2, "value": 28.4 },
-  { "variable": "precipitation", "lat": 10.5, "lon": -74.2, "value": 12.7 },
-  { "variable": "soil_moisture", "lat": 10.5, "lon": -74.2, "value": 0.45 },
-  { "variable": "drought", "lat": 10.5, "lon": -74.2, "value": 0.2 }
-]

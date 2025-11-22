@@ -18,7 +18,7 @@
  * Última actualización: 2025
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import ReactDOM from "react-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -128,7 +128,7 @@ const OPEN_METEO_MAP = {
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
-export default function ClimateDashboard({ currentUser }) {
+const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   // ========================================
   // REFERENCIAS (useRef)
   // Referencias a elementos DOM y objetos de Leaflet
@@ -138,7 +138,8 @@ export default function ClimateDashboard({ currentUser }) {
   const layersRef = useRef({});           // Capas climáticas
   const popupRef = useRef(null);          // Popup activo
   const searchRef = useRef(null);         // Input de búsqueda
-  const modalCanvasRef = useRef(null);    // Canvas del modal
+  const popupCanvasRef = useRef(null);    // Canvas del panel lateral (popup inicial)
+  const modalCanvasRef = useRef(null);    // Canvas del modal ampliado
   const timeSeriesChartRef = useRef(null); // Gráfico de series temporales
 
   // ========================================
@@ -220,14 +221,35 @@ export default function ClimateDashboard({ currentUser }) {
   useEffect(() => {
     if (currentUser) {
       setUserInfo({
-        nombre: currentUser.first_name && currentUser.last_name 
-          ? `${currentUser.first_name} ${currentUser.last_name}` 
+        nombre: currentUser.first_name && currentUser.last_name
+          ? `${currentUser.first_name} ${currentUser.last_name}`
           : "Usuario Demo",
         rol: currentUser.role || "Analista",
         email: currentUser.email || "usuario@ejemplo.com"
       });
     }
   }, [currentUser]);
+
+  /**
+   * EFECTO: Redibujar gráfico del panel lateral cuando selectedData cambie
+   * Esto asegura que el gráfico se mantenga visible después de cerrar el modal
+   */
+  useEffect(() => {
+    if (selectedData && selectedData.series && popupCanvasRef.current && !modalOpen) {
+      setTimeout(() => {
+        drawMiniChart(popupCanvasRef.current, selectedData.series, LAYER_DEFS[activeVar].legend.colors);
+      }, 100);
+    }
+  }, [selectedData, modalOpen, activeVar]);
+
+  /**
+   * Exponer funciones al componente padre mediante ref
+   */
+  useImperativeHandle(ref, () => ({
+    saveToMyRecords,
+    downloadJSON,
+    downloadPDF
+  }));
 
   /**
    * EFECTO: Actualizar popup cuando cambie la variable activa
@@ -345,13 +367,41 @@ export default function ClimateDashboard({ currentUser }) {
 
     const timeoutId = setTimeout(async () => {
       try {
-        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`);
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&addressdetails=1`);
         const results = await resp.json();
         console.log('Sugerencias encontradas:', results);
         if (results && results.length > 0) {
-          setSearchSuggestions(results);
+          // Formatear resultados para mostrar solo nombre y país
+          const formattedResults = results.map(result => {
+            const address = result.address || {};
+            const city = address.city || address.town || address.village || address.municipality || '';
+            const state = address.state || '';
+            const country = address.country || '';
+
+            // Crear nombre corto: "Ciudad, País" o "Estado, País"
+            let shortName = '';
+            if (city && country) {
+              shortName = `${city}, ${country}`;
+            } else if (state && country) {
+              shortName = `${state}, ${country}`;
+            } else if (country) {
+              shortName = country;
+            } else {
+              // Fallback al display_name original pero acortado
+              const parts = result.display_name.split(',');
+              shortName = parts.length > 2 ? `${parts[0]}, ${parts[parts.length - 1]}` : result.display_name;
+            }
+
+            return {
+              ...result,
+              shortName: shortName.trim(),
+              country: country
+            };
+          });
+
+          setSearchSuggestions(formattedResults);
           setShowSuggestions(true);
-          console.log('Mostrando', results.length, 'sugerencias');
+          console.log('Mostrando', formattedResults.length, 'sugerencias');
         } else {
           setSearchSuggestions([]);
           setShowSuggestions(false);
@@ -378,43 +428,28 @@ export default function ClimateDashboard({ currentUser }) {
    */
   async function selectSuggestion(suggestion) {
     console.log('🎯 selectSuggestion llamada con:', suggestion);
-    
+
     const { lat, lon, display_name } = suggestion;
-    
+
     console.log('📍 Lugar seleccionado:', display_name, `(${lat}, ${lon})`);
-    
+
     // IMPORTANTE: Actualizar el input con el lugar seleccionado
     setSearchQuery(display_name);
     console.log('✅ Input actualizado con:', display_name);
-    
+
     // Cerrar dropdown
     setShowSuggestions(false);
     setSearchSuggestions([]);
     console.log('✅ Dropdown cerrado');
-    
-    const map = mapRef.current;
-    if (!map) {
-      console.error('❌ Mapa no disponible');
-      return;
-    }
-    
+
     // Convertir a números
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lon);
-    
+
     console.log('🗺️ Navegando al lugar en el mapa...', { latitude, longitude });
-    
-    // Navegar al lugar con animación suave
-    map.flyTo([latitude, longitude], 10, {
-      duration: 1.2,        // Animación de 1.2 segundos
-      easeLinearity: 0.25
-    });
-    
-    // Esperar a que la animación del mapa termine
-    await new Promise(resolve => setTimeout(resolve, 700));
-    console.log('✅ Animación completada');
-    
+
     // Traer los datos del lugar y mostrar el popup
+    // handlePointSelection se encargará de centrar el mapa
     console.log('📊 Obteniendo datos climatológicos del lugar...');
     try {
       await handlePointSelection(latitude, longitude);
@@ -757,17 +792,35 @@ export default function ClimateDashboard({ currentUser }) {
     // Botón para ampliar serie en modal
     const expandBtn = L.DomUtil.create("button", "popup-expand", popupEl);
     expandBtn.innerText = "Ampliar serie";
-    expandBtn.onclick = () => {
+    expandBtn.onclick = async () => {
       setModalOpen(true);
-      
+
+      // Obtener el lugar usando geocodificación inversa
+      const place = await reverseGeocode(lat, lng);
+
+      // Calcular las estadísticas desde la serie actual
+      const stats = computeStats(series);
+
+      // Establecer los datos seleccionados para el modal
+      setSelectedData({
+        lat,
+        lng,
+        place,
+        series,
+        unit: LAYER_DEFS[activeVar].legend.unit || "",
+        mean: stats.mean,
+        max: stats.max,
+        min: stats.min
+      });
+
       // MEJORA: Usar las fechas del panel principal si existen
       // Si no hay fechas en el panel, usar defaults (hoy y hace 7 días)
       const modalStart = startDate || getDefaultStartDate();
       const modalEnd = endDate || getDefaultEndDate();
-      
+
       setModalStartDate(modalStart);
       setModalEndDate(modalEnd);
-      
+
       const days = calculateDaysDifference(modalStart, modalEnd);
       setTimeout(() => drawModalSeries(activeVar, lat, lng, days), 120);
     };
@@ -796,6 +849,50 @@ export default function ClimateDashboard({ currentUser }) {
     const place = await reverseGeocode(lat, lng);
     setSelectedPoint({ lat, lng, place });
 
+    // Centrar el mapa en el punto seleccionado con offset para el modal lateral
+    const map = mapRef.current;
+    if (map) {
+      // Calcular el offset para dejar espacio al modal lateral (350px de ancho + margen)
+      const mapContainer = map.getContainer();
+      const mapWidth = mapContainer.offsetWidth;
+      const sidebarWidth = 350;
+
+      // Posicionar el punto cerca del panel lateral (lado derecho)
+      // Dejamos 100px desde el borde del panel para que sea visible
+      const marginFromPanel = 100;
+      const targetX = mapWidth - sidebarWidth - marginFromPanel; // Posición desde el lado derecho
+      const offsetX = targetX - mapWidth / 2;
+
+      const point = map.project([lat, lng], 10);
+      point.x += offsetX;
+      const newCenter = map.unproject(point, 10);
+
+      map.flyTo(newCenter, 10, {
+        duration: 1.5,
+        easeLinearity: 0.25
+      });
+    }
+
+    // Agregar marcador en el punto seleccionado
+    if (mapRef.current) {
+      // Eliminar marcador anterior si existe
+      if (window.currentMarker) {
+        mapRef.current.removeLayer(window.currentMarker);
+      }
+
+      // Crear nuevo marcador
+      const marker = L.circleMarker([lat, lng], {
+        radius: 8,
+        fillColor: '#3b82f6',
+        color: '#ffffff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+      }).addTo(mapRef.current);
+
+      window.currentMarker = marker;
+    }
+
     const series = await fetchSeriesFor(activeVar, lat, lng, downloadDateRange);
     const stats = computeStats(series);
 
@@ -814,7 +911,14 @@ export default function ClimateDashboard({ currentUser }) {
       time: new Date().toLocaleTimeString(),
     };
     setSelectedData(data);
-    
+
+    // Dibujar el mini gráfico en el panel lateral
+    setTimeout(() => {
+      if (popupCanvasRef.current) {
+        drawMiniChart(popupCanvasRef.current, series, LAYER_DEFS[activeVar].legend.colors);
+      }
+    }, 100);
+
     // Agregar al historial de puntos consultados
     setSelectedPointsHistory(prev => [
       ...prev,
@@ -826,8 +930,6 @@ export default function ClimateDashboard({ currentUser }) {
         timestamp: new Date().toISOString()
       }
     ]);
-    
-    openPopupAt(lat, lng, place, series);
   }
 
   /**
@@ -845,9 +947,53 @@ export default function ClimateDashboard({ currentUser }) {
     const { center, place, samplePoints } = data;
     const [lat, lng] = center;
 
+    // Centrar el mapa en el centro del polígono con offset para el modal lateral
+    const map = mapRef.current;
+    if (map) {
+      // Calcular el offset para dejar espacio al modal lateral (350px de ancho + margen)
+      const mapContainer = map.getContainer();
+      const mapWidth = mapContainer.offsetWidth;
+      const sidebarWidth = 350;
+
+      // Posicionar el punto cerca del panel lateral (lado derecho)
+      // Dejamos 100px desde el borde del panel para que sea visible
+      const marginFromPanel = 100;
+      const targetX = mapWidth - sidebarWidth - marginFromPanel; // Posición desde el lado derecho
+      const offsetX = targetX - mapWidth / 2;
+
+      const point = map.project([lat, lng], 11);
+      point.x += offsetX;
+      const newCenter = map.unproject(point, 11);
+
+      map.flyTo(newCenter, 11, {
+        duration: 1.5,
+        easeLinearity: 0.25
+      });
+    }
+
+    // Agregar marcador en el centro del polígono
+    if (mapRef.current) {
+      // Eliminar marcador anterior si existe
+      if (window.currentMarker) {
+        mapRef.current.removeLayer(window.currentMarker);
+      }
+
+      // Crear marcador para el centro del polígono
+      const marker = L.circleMarker([lat, lng], {
+        radius: 10,
+        fillColor: '#ef4444',
+        color: '#ffffff',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: 0.8
+      }).addTo(mapRef.current);
+
+      window.currentMarker = marker;
+    }
+
     // Obtener datos de todos los puntos de muestreo
     const allSeries = await Promise.all(
-      samplePoints.map(([sampleLat, sampleLng]) => 
+      samplePoints.map(([sampleLat, sampleLng]) =>
         fetchSeriesFor(activeVar, sampleLat, sampleLng, downloadDateRange)
       )
     );
@@ -863,7 +1009,7 @@ export default function ClimateDashboard({ currentUser }) {
     const resultData = {
       lat: lat.toFixed(6),
       lng: lng.toFixed(6),
-      place: `${place} (Área ${samplePoints.length} puntos)`,
+      place: place,
       variable: activeVar,
       unit: LAYER_DEFS[activeVar].legend.unit,
       value: aggregatedSeries[aggregatedSeries.length - 1].value,
@@ -873,10 +1019,12 @@ export default function ClimateDashboard({ currentUser }) {
       min: stats.min,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
+      samplePoints: samplePoints,  // Guardar los puntos del polígono
+      isPolygon: true,  // Marcar que es un polígono
     };
-    
+
     setSelectedData(resultData);
-    openPopupAt(lat, lng, resultData.place, aggregatedSeries);
+    // Ya no abrir el popup antiguo, solo mostrar el panel lateral
     setDrawMode(false);
   }
 
@@ -892,10 +1040,20 @@ export default function ClimateDashboard({ currentUser }) {
     map.closePopup();
     map.eachLayer((layer) => {
       // No eliminar las capas base (TileLayer)
-      if (layer instanceof L.Marker || layer instanceof L.Popup || layer instanceof L.Polygon || layer instanceof L.Polyline) {
+      if (layer instanceof L.Marker || layer instanceof L.Popup || layer instanceof L.Polygon || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
         map.removeLayer(layer);
       }
     });
+
+    // Eliminar el marcador actual si existe
+    if (window.currentMarker) {
+      try {
+        map.removeLayer(window.currentMarker);
+      } catch (e) {
+        console.warn('Error eliminando currentMarker:', e);
+      }
+      window.currentMarker = null;
+    }
 
     // Limpiar referencias
     popupRef.current = null;
@@ -933,6 +1091,9 @@ export default function ClimateDashboard({ currentUser }) {
   function handleClearAll() {
     console.log('🗑️ Limpiando todo del mapa...');
 
+    // Desactivar modo de dibujo
+    setDrawMode(false);
+
     // Limpiar polígono si existe
     if (window.__clearPolygon) {
       window.__clearPolygon();
@@ -961,8 +1122,6 @@ export default function ClimateDashboard({ currentUser }) {
       const j = await resp.json();
       if (!j || !j.length) return;
       const { lat, lon } = j[0];
-      const map = mapRef.current;
-      map.setView([+lat, +lon], 9);
       await handlePointSelection(+lat, +lon);
     } catch (err) {
       console.warn("search error", err);
@@ -1725,8 +1884,8 @@ export default function ClimateDashboard({ currentUser }) {
    */
   function onLegendMove(e) {
     const rect = e.currentTarget.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const pct = 1 - y / rect.height;
+    const x = e.clientX - rect.left;
+    const pct = x / rect.width;
     const cfg = LAYER_DEFS[activeVar].legend;
     const val = cfg.min + pct * (cfg.max - cfg.min);
     setLegendHover(val.toFixed(2) + " " + cfg.unit);
@@ -1770,9 +1929,9 @@ export default function ClimateDashboard({ currentUser }) {
     });
     mapRef.current = map;
 
-    // Agregar controles de zoom personalizados en esquina superior derecha
+    // Agregar controles de zoom personalizados en esquina inferior derecha (donde estaban los botones de descargar)
     L.control.zoom({
-      position: 'topright'
+      position: 'bottomleft'
     }).addTo(map);
 
     // Forzar recalculo de tamaño del mapa después de renderizar
@@ -2458,54 +2617,132 @@ export default function ClimateDashboard({ currentUser }) {
         />
 
         {/* Botones de dibujar y borrar polígono */}
-        <div className="draw-buttons-container">
+
           <button
-            className={`um-btn btn-draw ${drawMode ? 'active' : ''}`}
+            className={`um-btn btn-draw btn-with-icon ${drawMode ? 'active' : ''}`}
             onClick={() => setDrawMode(!drawMode)}
             title={drawMode ? 'Cancelar dibujo' : 'Dibujar área en el mapa'}
           >
-            {drawMode ? '✕ Cancelar' : '✏️ Dibujar'}
+            {drawMode ? (
+              <>✕ Cancelar</>
+            ) : (
+              <>
+                <img src="/iconos/paint-brush.png" alt="Dibujar" className="btn-icon" />
+                Dibujar
+              </>
+            )}
           </button>
 
-          {/* Botón unificado de borrar - se muestra si hay polígono O punto seleccionado */}
-          {(hasPolygon || selectedPoint) && !drawMode && (
-            <button
-              className="um-btn btn-delete"
-              onClick={handleClearAll}
-              title="Limpiar todo del mapa (polígonos y puntos)"
-            >
-              🗑️ Borrar
-            </button>
-          )}
-        </div>
+          {/* Botón de borrar - siempre visible pero deshabilitado si no hay nada que borrar */}
+          <button
+            className="um-btn btn-delete btn-with-icon"
+            onClick={handleClearAll}
+            disabled={!hasPolygon && !selectedPoint || drawMode}
+            title={hasPolygon || selectedPoint ? "Limpiar todo del mapa (polígonos y puntos)" : "No hay nada que borrar"}
+          >
+            <img src="/iconos/eraser.png" alt="Borrar" className="btn-icon" />
+            Borrar
+          </button>
+        
       </div>
 
       {/* ========================================
           LEYENDA DE COLORES
           ======================================== */}
       <div className="um-legend" onMouseMove={onLegendMove} onMouseLeave={onLegendLeave}>
-        <div 
-          className="um-legend-bar" 
-          style={{ background: `linear-gradient(to top, ${legend.colors.join(",")})` }} 
+        <div className="um-legend-unit">{legend.unit}</div>
+        <div
+          className="um-legend-bar"
+          style={{ background: `linear-gradient(to right, ${legend.colors.join(",")})` }}
         />
         <div className="um-legend-labels">
-          <div>{legend.max}</div>
-          <div className="um-legend-unit">{legend.unit}</div>
           <div>{legend.min}</div>
+          <div>{legend.max}</div>
         </div>
         {legendHover && <div className="um-legend-tooltip">{legendHover}</div>}
       </div>
 
       {/* ========================================
           BOTONES DE DESCARGA Y GUARDADO
+          Movidos al panel lateral de UserPanel
           ======================================== */}
-      <div className="um-buttons">
-        <button className="um-btn" onClick={saveToMyRecords} title="Guardar en base de datos sin descargar">
-          💾 Guardar en mis registros
-        </button>
-        <button className="um-btn" onClick={downloadJSON}>📥 Descargar JSON</button>
-        <button className="um-btn danger" onClick={downloadPDF}>📄 Descargar PDF</button>
-      </div>
+
+      {/* ========================================
+          COMPONENTE POLYGON DRAWER
+          ======================================== */}
+      <PolygonDrawer
+        map={mapRef.current}
+        isActive={drawMode}
+        onPolygonComplete={handlePolygonComplete}
+        onClearPolygon={true}
+        activeVariable={activeVar}
+      />
+
+      {/* ========================================
+          PANEL LATERAL INICIAL (Mini popup)
+          ======================================== */}
+      {selectedData && !modalOpen && (
+        <div className="um-side-panel">
+          {/* Encabezado del panel */}
+          <div className="side-panel-header">
+            <h3 className="side-panel-title">{activeVar}</h3>
+            <button className="modal-close-btn" onClick={() => setSelectedData(null)}>✕</button>
+          </div>
+
+          {/* Información del lugar */}
+          <div className="side-panel-info">
+            <div className="modal-info-item">
+              <strong>Lugar:</strong> {selectedData.isPolygon ? 'Región seleccionada' : selectedData.place}
+            </div>
+
+            {/* Si es un polígono, mostrar solo el resumen */}
+            {selectedData.isPolygon && selectedData.samplePoints ? (
+              <div className="modal-info-item">
+                <strong>Puntos de muestreo:</strong> {selectedData.samplePoints.length} puntos
+              </div>
+            ) : (
+              <div className="modal-info-item">
+                <strong>Coordenadas:</strong> {selectedData.lat}, {selectedData.lng}
+              </div>
+            )}
+
+            {selectedData.series && selectedData.series.length > 0 && (
+              <>
+                <div className="modal-info-item">
+                  <strong>Promedio:</strong> {selectedData.mean} {selectedData.unit}
+                </div>
+                <div className="modal-info-item">
+                  <strong>Máximo:</strong> {selectedData.max} {selectedData.unit}
+                </div>
+                <div className="modal-info-item">
+                  <strong>Mínimo:</strong> {selectedData.min} {selectedData.unit}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Mini gráfico */}
+          <div className="side-panel-chart">
+            <canvas ref={popupCanvasRef} width={318} height={100} />
+          </div>
+
+          {/* Botón para ampliar */}
+          <button
+            className="side-panel-expand-btn"
+            onClick={() => {
+              setModalOpen(true);
+              const modalStart = startDate || getDefaultStartDate();
+              const modalEnd = endDate || getDefaultEndDate();
+              setModalStartDate(modalStart);
+              setModalEndDate(modalEnd);
+              const days = calculateDaysDifference(modalStart, modalEnd);
+              setTimeout(() => drawModalSeries(activeVar, selectedData.lat, selectedData.lng, days), 120);
+            }}
+          >
+            Ampliar serie
+          </button>
+        </div>
+      )}
 
       {/* ========================================
           MODAL DE SERIE TEMPORAL AMPLIADA
@@ -2513,91 +2750,118 @@ export default function ClimateDashboard({ currentUser }) {
       {modalOpen && (
         <div className="um-modal" onClick={() => setModalOpen(false)}>
           <div className="um-modal-card" onClick={(e) => e.stopPropagation()}>
-            {/* Encabezado del modal */}
+            {/* Encabezado del modal - FIJO */}
             <div className="um-modal-header">
               <h3 className="modal-title">{activeVar} — Serie ampliada</h3>
               <button className="modal-close-btn" onClick={() => setModalOpen(false)}>✕</button>
             </div>
-            
-            {/* Información del lugar seleccionado */}
-            <div className="um-modal-info">
-              {selectedData && (
-                <>
-                  <div className="modal-info-item">
-                    <strong>Lugar:</strong> {selectedData.place}
-                  </div>
-                  <div className="modal-info-item">
-                    <strong>Coordenadas:</strong> {selectedData.lat}, {selectedData.lng}
-                  </div>
-                  {selectedData.series && selectedData.series.length > 0 && (
-                    <>
-                      <div className="modal-info-item">
-                        <strong>Valor actual:</strong> {selectedData.series[selectedData.series.length - 1].value} {selectedData.unit}
-                      </div>
-                      <div className="modal-info-item">
-                        <strong>Promedio:</strong> {selectedData.mean} {selectedData.unit}
-                      </div>
-                      <div className="modal-info-item">
-                        <strong>Máximo:</strong> {selectedData.max} {selectedData.unit}
-                      </div>
-                      <div className="modal-info-item">
-                        <strong>Mínimo:</strong> {selectedData.min} {selectedData.unit}
-                      </div>
-                    </>
+
+            {/* Contenido scrollable */}
+            <div className="um-modal-content-wrapper">
+              {/* Descripción de la serie temporal */}
+              <div className="um-modal-description">
+                <p>
+                  Esta gráfica muestra la serie temporal completa de <strong>{activeVar}</strong> para la ubicación seleccionada.
+                  {selectedData && selectedData.isPolygon && selectedData.samplePoints && (
+                    <span> Los datos representan el promedio de <strong>{selectedData.samplePoints.length} puntos de muestreo</strong> distribuidos dentro del área seleccionada.</span>
                   )}
-                </>
-              )}
-            </div>
-
-            {/* Controles de fecha del modal */}
-            <div className="um-modal-date-controls">
-              <div className="modal-date-group">
-                <label className="modal-label">Fecha Inicio</label>
-                <input
-                  type="date"
-                  className="modal-date-input"
-                  value={modalStartDate}
-                  onChange={(e) => handleModalDateChange(e.target.value, modalEndDate)}
-                  max={modalEndDate || undefined}
-                />
+                  {' '}Puedes ajustar el rango de fechas para visualizar períodos específicos y descargar los datos en formato JSON o PDF.
+                </p>
               </div>
-              <div className="modal-date-group">
-                <label className="modal-label">Fecha Fin</label>
-                <input
-                  type="date"
-                  className="modal-date-input"
-                  value={modalEndDate}
-                  onChange={(e) => handleModalDateChange(modalStartDate, e.target.value)}
-                  min={modalStartDate || undefined}
-                />
+
+              {/* Controles de fecha del modal */}
+              <div className="um-modal-date-controls">
+                <div className="modal-date-group">
+                  <label className="modal-label">Fecha Inicio</label>
+                  <input
+                    type="date"
+                    className="modal-date-input"
+                    value={modalStartDate}
+                    onChange={(e) => handleModalDateChange(e.target.value, modalEndDate)}
+                    max={modalEndDate || undefined}
+                  />
+                </div>
+                <div className="modal-date-group">
+                  <label className="modal-label">Fecha Fin</label>
+                  <input
+                    type="date"
+                    className="modal-date-input"
+                    value={modalEndDate}
+                    onChange={(e) => handleModalDateChange(modalStartDate, e.target.value)}
+                    min={modalStartDate || undefined}
+                  />
+                </div>
+              </div>
+
+              {/* Canvas con gráfico ampliado */}
+              <div className="um-modal-body">
+                <canvas ref={modalCanvasRef} width={920} height={280} />
+              </div>
+
+              {/* Información del lugar seleccionado */}
+              <div className="um-modal-info">
+                {selectedData && (
+                  <>
+                    <div className="modal-info-item">
+                      <strong>Lugar:</strong> {selectedData.isPolygon ? 'Región seleccionada' : selectedData.place}
+                    </div>
+
+                    {/* Si es un polígono, mostrar los puntos de muestreo */}
+                    {selectedData.isPolygon && selectedData.samplePoints ? (
+                      <>
+                        <div className="modal-info-item" style={{ gridColumn: '1 / -1' }}>
+                          <strong>Puntos de muestreo:</strong> {selectedData.samplePoints.length} puntos distribuidos en el área
+                        </div>
+                        {selectedData.samplePoints.map((point, idx) => (
+                          <div key={idx} className="modal-info-item">
+                            <strong>Punto {idx + 1}:</strong> {point[0].toFixed(6)}, {point[1].toFixed(6)}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <div className="modal-info-item">
+                        <strong>Coordenadas:</strong> {selectedData.lat}, {selectedData.lng}
+                      </div>
+                    )}
+
+                    {selectedData.series && selectedData.series.length > 0 && (
+                      <>
+                        <div className="modal-info-item">
+                          <strong>Valor actual:</strong> {selectedData.series[selectedData.series.length - 1].value} {selectedData.unit}
+                        </div>
+                        <div className="modal-info-item">
+                          <strong>Promedio:</strong> {selectedData.mean} {selectedData.unit}
+                        </div>
+                        <div className="modal-info-item">
+                          <strong>Máximo:</strong> {selectedData.max} {selectedData.unit}
+                        </div>
+                        <div className="modal-info-item">
+                          <strong>Mínimo:</strong> {selectedData.min} {selectedData.unit}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Canvas con gráfico ampliado */}
-            <div className="um-modal-body">
-              <canvas ref={modalCanvasRef} width={820} height={340} />
-            </div>
-
-            {/* Botones del modal */}
+            {/* Botones del modal - FIJOS */}
             <div className="um-modal-footer">
-              <button className="um-btn" onClick={downloadModalJSON}>Descargar JSON</button>
-              <button className="um-btn danger" onClick={downloadModalPDF}>Descargar PDF</button>
-              <button className="um-btn btn-close-modal" onClick={() => setModalOpen(false)}>Cerrar</button>
+              <button className="um-btn" onClick={downloadModalJSON}>
+                <img src="/iconos/download.png" alt="" />
+                Descargar JSON
+              </button>
+              <button className="um-btn danger" onClick={downloadModalPDF}>
+                <img src="/iconos/file-pdf.png" alt="" />
+                Descargar PDF
+              </button>
+              <button className="um-btn btn-close-modal" onClick={() => setModalOpen(false)}>
+                ✕ Cerrar
+              </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* ========================================
-          COMPONENTE POLYGON DRAWER
-          ======================================== */}
-      <PolygonDrawer 
-        map={mapRef.current}
-        isActive={drawMode}
-        onPolygonComplete={handlePolygonComplete}
-        onClearPolygon={true}
-        activeVariable={activeVar}
-      />
 
       {/* ========================================
           DROPDOWN DE SUGERENCIAS (PORTAL)
@@ -2626,7 +2890,7 @@ export default function ClimateDashboard({ currentUser }) {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🖱️ Click en sugerencia:', suggestion.display_name);
+                console.log('🖱️ Click en sugerencia:', suggestion.shortName || suggestion.display_name);
                 selectSuggestion(suggestion);
               }}
               onMouseDown={(e) => {
@@ -2636,8 +2900,8 @@ export default function ClimateDashboard({ currentUser }) {
             >
               <div className="suggestion-icon">📍</div>
               <div className="suggestion-content">
-                <div className="suggestion-name">{suggestion.display_name}</div>
-                <div className="suggestion-type">{suggestion.type || 'Lugar'}</div>
+                <div className="suggestion-name">{suggestion.shortName || suggestion.display_name}</div>
+                {suggestion.country && <div className="suggestion-type">{suggestion.country}</div>}
               </div>
             </div>
           ))}
@@ -2646,4 +2910,8 @@ export default function ClimateDashboard({ currentUser }) {
       )}
     </div>
   );
-}
+});
+
+ClimateDashboard.displayName = 'ClimateDashboard';
+
+export default ClimateDashboard;

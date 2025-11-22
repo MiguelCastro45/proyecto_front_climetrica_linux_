@@ -32,20 +32,69 @@ export default function PolygonDrawer({
         console.warn('Error al eliminar polígono:', e);
       }
     }
+
+    // También limpiar la referencia del polígono en progreso
+    if (polygonLayerRef.current && map) {
+      try {
+        map.removeLayer(polygonLayerRef.current);
+        polygonLayerRef.current = null;
+      } catch (e) {
+        console.warn('Error al eliminar polígono en progreso:', e);
+      }
+    }
+
+    // Limpiar puntos y estado
+    clearTemporaryMarkers();
+    setPoints([]);
+    setIsDrawing(false);
   };
 
   // Limpiar marcadores temporales
   const clearTemporaryMarkers = () => {
+    // Limpiar marcadores circulares guardados en la referencia
     markersRef.current.forEach(marker => {
       if (map && map.hasLayer(marker)) {
-        map.removeLayer(marker);
+        try {
+          map.removeLayer(marker);
+        } catch (e) {
+          console.warn('Error eliminando marcador:', e);
+        }
       }
     });
     markersRef.current = [];
 
+    // Limpiar línea temporal
     if (tempLineRef.current && map) {
-      map.removeLayer(tempLineRef.current);
+      try {
+        map.removeLayer(tempLineRef.current);
+      } catch (e) {
+        console.warn('Error eliminando línea temporal:', e);
+      }
       tempLineRef.current = null;
+    }
+
+    // Forzar limpieza de TODAS las polylines y CircleMarkers del mapa
+    if (map) {
+      const layersToRemove = [];
+      map.eachLayer((layer) => {
+        // Eliminar líneas temporales (polylines que no sean polígonos)
+        if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+          layersToRemove.push(layer);
+        }
+        // Eliminar TODOS los CircleMarkers (puntos azules del dibujo)
+        if (layer instanceof L.CircleMarker) {
+          layersToRemove.push(layer);
+        }
+      });
+
+      // Eliminar todas las capas encontradas
+      layersToRemove.forEach(layer => {
+        try {
+          map.removeLayer(layer);
+        } catch (e) {
+          console.warn('Error eliminando capa:', e);
+        }
+      });
     }
   };
 
@@ -60,12 +109,16 @@ export default function PolygonDrawer({
     }
 
     setPoints([]);
+    setIsDrawing(false);
   };
 
   // Limpiar cuando el componente se desmonta o se desactiva
   useEffect(() => {
     if (!isActive) {
       clearDrawing();
+      // Asegurarse de que los puntos se limpian
+      setPoints([]);
+      setIsDrawing(false);
     }
   }, [isActive]);
 
@@ -162,8 +215,26 @@ export default function PolygonDrawer({
     const bounds = polygon.getBounds();
     const center = bounds.getCenter();
 
+    // Calcular área del polígono en km²
+    const areaInKm2 = calculatePolygonArea(points);
+
+    // Calcular número de puntos de muestreo basándose en el área
+    // Áreas pequeñas (< 100 km²): 3-5 puntos
+    // Áreas medianas (100-1000 km²): 5-10 puntos
+    // Áreas grandes (> 1000 km²): 10-20 puntos
+    let numSamples;
+    if (areaInKm2 < 100) {
+      numSamples = Math.max(3, Math.min(5, Math.floor(areaInKm2 / 20) + 3));
+    } else if (areaInKm2 < 1000) {
+      numSamples = Math.max(5, Math.min(10, Math.floor(areaInKm2 / 100) + 5));
+    } else {
+      numSamples = Math.max(10, Math.min(20, Math.floor(areaInKm2 / 500) + 10));
+    }
+
+    console.log(`Área del polígono: ${areaInKm2.toFixed(2)} km² - Puntos de muestreo: ${numSamples}`);
+
     // Calcular puntos de muestreo dentro del polígono
-    const samplePoints = generateSamplePoints(points, 5);
+    const samplePoints = generateSamplePoints(points, numSamples);
 
     // Obtener lugar representativo (centro)
     const place = await reverseGeocode(center.lat, center.lng);
@@ -188,6 +259,36 @@ export default function PolygonDrawer({
   const cancelDrawing = () => {
     clearDrawing();
     setIsDrawing(false);
+  };
+
+  // Calcular área del polígono en km² usando la fórmula de Shoelace
+  const calculatePolygonArea = (polygonPoints) => {
+    if (polygonPoints.length < 3) return 0;
+
+    // Radio de la Tierra en km
+    const R = 6371;
+
+    // Convertir coordenadas a radianes
+    const toRad = (deg) => deg * Math.PI / 180;
+
+    let area = 0;
+    const numPoints = polygonPoints.length;
+
+    for (let i = 0; i < numPoints; i++) {
+      const p1 = polygonPoints[i];
+      const p2 = polygonPoints[(i + 1) % numPoints];
+
+      const lat1 = toRad(p1[0]);
+      const lat2 = toRad(p2[0]);
+      const lon1 = toRad(p1[1]);
+      const lon2 = toRad(p2[1]);
+
+      // Fórmula del área esférica
+      area += (lon2 - lon1) * (2 + Math.sin(lat1) + Math.sin(lat2));
+    }
+
+    area = Math.abs(area * R * R / 2);
+    return area;
   };
 
   // Generar puntos de muestreo dentro del polígono

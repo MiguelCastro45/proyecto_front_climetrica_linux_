@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
     path('profile/', views.profile, name='profile'),
+    path('profile/update/', views.update_own_profile, name='update_own_profile'),
 
     # Admin — gestión de usuarios
     path('users/', views.list_users, name='list_users'),                # GET

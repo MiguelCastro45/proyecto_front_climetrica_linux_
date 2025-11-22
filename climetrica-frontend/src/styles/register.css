@@ -4,7 +4,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #3B5998, #40E0D0);
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
   padding: 20px;
   font-family: Arial, sans-serif;
 }
@@ -27,7 +27,7 @@
   text-align: center;
   margin-bottom: 25px;
   font-size: 1.8rem;
-  background: linear-gradient(135deg, #3B5998, #40E0D0);
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -48,8 +48,8 @@
 
 .register-form input:focus,
 .register-form select:focus {
-  border-color: #40E0D0;
-  box-shadow: 0 0 5px rgba(64, 224, 208, 0.4);
+  border-color: #2E86DE;
+  box-shadow: 0 0 5px rgba(46, 134, 222, 0.4);
 }
 
 /* Botón */
@@ -57,7 +57,7 @@
   padding: 12px 0;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #3B5998, #40E0D0);
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
   color: #fff;
   font-size: 1rem;
   font-weight: bold;
@@ -66,7 +66,7 @@
 }
 
 .register-form button:hover {
-  background: linear-gradient(135deg, #2d4373, #33c4b5);
+  background: linear-gradient(135deg, #2d4373, #1c5fa8);
   box-shadow: 0 4px 12px rgba(59, 89, 152, 0.3);
   transform: translateY(-2px);
 }

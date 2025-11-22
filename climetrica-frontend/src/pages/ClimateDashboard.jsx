@@ -95,16 +95,17 @@ function getClimateLayerUrl(variable) {
  * Última actualización: 2025
  */
 
-export default function ClimateDashboard({ currentUser }) {
+export default function ClimateDashboard({ currentUser: propCurrentUser }) {
   const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
   const timeSeriesChartRef = useRef(null);
   const modalCanvasRef = useRef(null);
-  
+
   // ========================================
   // ESTADOS
   // ========================================
+  const [currentUser, setCurrentUser] = useState(propCurrentUser || null);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filters, setFilters] = useState({ fecha: "", lugar: "", variable: "" });
@@ -115,9 +116,54 @@ export default function ClimateDashboard({ currentUser }) {
   const [deletingId, setDeletingId] = useState(null);
 
   /**
+   * EFECTO: Obtener usuario logueado si no se pasó como prop
+   */
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      // Si ya hay currentUser desde las props, no hacer nada
+      if (propCurrentUser) {
+        setCurrentUser(propCurrentUser);
+        return;
+      }
+
+      // Si no, obtenerlo del token
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.warn('⚠️ No hay token, redirigiendo a login');
+          navigate("/");
+          return;
+        }
+
+        const res = await API.get("/profile/");
+        console.log('📥 Respuesta completa de /profile/:', res.data);
+
+        // El backend devuelve {user: {...}}, no directamente el usuario
+        const userData = res.data.user || res.data;
+        console.log('👤 Usuario extraído:', userData);
+        console.log('🆔 userData._id:', userData._id);
+        console.log('📛 userData.first_name:', userData.first_name);
+        console.log('📛 userData.last_name:', userData.last_name);
+
+        setCurrentUser(userData);
+      } catch (err) {
+        console.error('❌ Error obteniendo usuario:', err);
+        navigate("/");
+      }
+    };
+
+    fetchCurrentUser();
+  }, [propCurrentUser, navigate]);
+
+  /**
    * EFECTO: Cargar datos del servidor filtrados por usuario
    */
   useEffect(() => {
+    // No cargar datos hasta que tengamos el currentUser
+    if (!currentUser) {
+      return;
+    }
+
     const fetchData = async () => {
       try {
         // Construir URL con filtros (ruta relativa)
@@ -125,8 +171,13 @@ export default function ClimateDashboard({ currentUser }) {
         const params = new URLSearchParams();
 
         // FILTRO POR USUARIO LOGUEADO
+        console.log('🔍 Verificando currentUser para filtrado inicial:', currentUser);
+
         if (currentUser && currentUser._id) {
           params.append('userId', currentUser._id);
+          console.log('🔑 Filtrando por userId:', currentUser._id);
+        } else {
+          console.warn('⚠️ No se puede filtrar por usuario - currentUser:', currentUser);
         }
 
         if (params.toString()) {
@@ -190,10 +241,12 @@ export default function ClimateDashboard({ currentUser }) {
 
           return {
             _id: item._id, // IMPORTANTE: Guardar el ID para poder eliminar
+            userId: item.usuario?._id || item.usuario?.id || null, // ID del usuario para filtrado
             // Usuario
             nombre: item.usuario?.nombre || "N/A",
             rol: item.usuario?.rol || "N/A",
             email: item.usuario?.email || "N/A",
+            fechaDescarga: item.usuario?.fechaDescarga || null, // Fecha original sin formatear
             fecha: item.usuario?.fechaDescarga
               ? new Date(item.usuario.fechaDescarga).toLocaleDateString()
               : "N/A",
@@ -224,8 +277,25 @@ export default function ClimateDashboard({ currentUser }) {
           };
         });
 
-        setData(cleaned);
-        setFilteredData(cleaned);
+        // Ordenar por fecha más reciente primero
+        const sorted = cleaned.sort((a, b) => {
+          if (!a.fechaDescarga) return 1;
+          if (!b.fechaDescarga) return -1;
+          return new Date(b.fechaDescarga) - new Date(a.fechaDescarga);
+        });
+
+        setData(sorted);
+
+        // Aplicar filtro de usuario en el frontend también (doble filtrado)
+        // Esto asegura que solo se muestren registros del usuario logueado
+        const filteredByUser = sorted.filter((d) => {
+          if (currentUser && currentUser._id) {
+            return d.userId === currentUser._id;
+          }
+          return true; // Si no hay usuario, mostrar todos
+        });
+
+        setFilteredData(filteredByUser);
       } catch (err) {
         console.error(err);
         setError("No se pudo conectar al servidor.");
@@ -273,30 +343,43 @@ export default function ClimateDashboard({ currentUser }) {
 
   /**
    * FUNCIÓN MEJORADA: Manejar cambio de filtros
+   * Ahora filtra localmente para mejor rendimiento
    */
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     const newFilters = { ...filters, [name]: value };
     setFilters(newFilters);
 
+    // Filtrar localmente desde `data` en lugar de hacer petición al backend
     const filtered = data.filter((d) => {
-      // Filtro por fecha
-      let matchFecha = true;
-      if (newFilters.fecha) {
-        const fechaFiltro = new Date(newFilters.fecha).toLocaleDateString();
-        matchFecha = d.fecha === fechaFiltro;
+      // Filtro por fecha de DESCARGA (no por fecha de los datos climáticos)
+      if (newFilters.fecha && d.fechaDescarga) {
+        // Normalizar ambas fechas para comparación (YYYY-MM-DD)
+        const recordDate = new Date(d.fechaDescarga);
+        const year = recordDate.getFullYear();
+        const month = String(recordDate.getMonth() + 1).padStart(2, '0');
+        const day = String(recordDate.getDate()).padStart(2, '0');
+        const normalizedRecordDate = `${year}-${month}-${day}`;
+
+        if (normalizedRecordDate !== newFilters.fecha) return false;
       }
-      
-      // Filtro por lugar
-      const matchLugar = !newFilters.lugar || 
-        d.lugar.toLowerCase().includes(newFilters.lugar.toLowerCase());
-      
+
+      // Filtro por lugar (búsqueda parcial, case-insensitive)
+      if (newFilters.lugar && d.lugar) {
+        if (!d.lugar.toLowerCase().includes(newFilters.lugar.toLowerCase())) {
+          return false;
+        }
+      }
+
       // Filtro por variable
-      const matchVariable = !newFilters.variable || d.variable === newFilters.variable;
-      
-      return matchFecha && matchLugar && matchVariable;
+      if (newFilters.variable && d.variable !== newFilters.variable) {
+        return false;
+      }
+
+      return true;
     });
 
+    console.log(`✅ Filtrados ${filtered.length} de ${data.length} registros`);
     setFilteredData(filtered);
   };
 
@@ -305,7 +388,7 @@ export default function ClimateDashboard({ currentUser }) {
    */
   const handleOpenModal = (d) => {
     setModalData(d);
-    setShowMap(false);
+    setShowMap(true); // Activar el mapa automáticamente para renderizar todo junto
   };
 
   /**
@@ -1005,7 +1088,7 @@ export default function ClimateDashboard({ currentUser }) {
           HEADER
           ======================================== */}
       <div className={styles.headerActions}>
-        <h2 className={styles.title}>📊 Datos Climaticos</h2>
+        <h2 className={styles.title}> Registro de Datos Climaticos</h2>
         {currentUser && (
           <span style={{ fontSize: '0.9em', color: '#666' }}>
             Usuario: {currentUser.first_name} {currentUser.last_name}
@@ -1049,18 +1132,18 @@ export default function ClimateDashboard({ currentUser }) {
       </div>
 
       {/* ========================================
-          TABLA DE DATOS
+          TABLA DE DATOS MEJORADA
           ======================================== */}
       <div className={styles.dataTableContainer}>
         <table className={styles.climateTable}>
           <thead>
             <tr>
-              <th>Variable</th>
-              <th>Usuario</th>
-              <th>Fecha</th>
-              <th>Hora</th>
+              <th>Fecha y Hora de Descarga</th>
               <th>Lugar</th>
+              <th>Variable</th>
               <th>Valor Actual</th>
+              <th>Fuente de Datos</th>
+              <th>Rango de Consulta</th>
               <th>Acción</th>
             </tr>
           </thead>
@@ -1068,12 +1151,49 @@ export default function ClimateDashboard({ currentUser }) {
             {filteredData.length > 0 ? (
               filteredData.slice(0, 30).map((d, i) => (
                 <tr key={d._id || i}>
-                  <td>{d.variable}</td>
-                  <td>{d.nombre}</td>
-                  <td>{d.fecha}</td>
-                  <td>{d.hora}</td>
+                  {/* Fecha y Hora de Descarga */}
+                  <td>
+                    {d.fecha}<br/>
+                    <small style={{ color: '#666' }}>{d.hora}</small>
+                  </td>
+
+                  {/* Lugar */}
                   <td>{d.lugar}</td>
-                  <td>{d.valorActual} {d.unidad}</td>
+
+                  {/* Variable */}
+                  <td>{d.variable}</td>
+
+                  {/* Valor Actual */}
+                  <td>
+                    <strong>{d.valorActual} {d.unidad}</strong>
+                  </td>
+
+                  {/* Fuente de Datos */}
+                  <td>
+                    {d.estadoDatos?.fuenteAPI || 'N/A'}
+                    {(d.estadoDatos?.enTiempoReal === 'true' || d.estadoDatos?.enTiempoReal === true) && (
+                      <>
+                        <br/>
+                        <small style={{ color: '#28a745' }}>• Tiempo Real</small>
+                      </>
+                    )}
+                  </td>
+
+                  {/* Rango de Consulta */}
+                  <td>
+                    {d.fechaInicio && d.fechaFin ? (
+                      <>
+                        <small>
+                          Desde: {d.fechaInicio}<br/>
+                          Hasta: {d.fechaFin}
+                        </small>
+                      </>
+                    ) : (
+                      <small style={{ color: '#999' }}>N/A</small>
+                    )}
+                  </td>
+
+                  {/* Acción */}
                   <td>
                     <button
                       className={`${styles.btn} ${styles.btnMore}`}
@@ -1086,7 +1206,9 @@ export default function ClimateDashboard({ currentUser }) {
               ))
             ) : (
               <tr>
-                <td colSpan="7">No hay datos disponibles.</td>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+                  No hay datos disponibles.
+                </td>
               </tr>
             )}
           </tbody>
@@ -1094,16 +1216,13 @@ export default function ClimateDashboard({ currentUser }) {
       </div>
 
       {/* ========================================
-          BOTONES DE ACCIÓN
+          BOTÓN VOLVER
           ======================================== */}
-      <br />
-      <center>
-        <div className={styles.buttons}>
-          <button className={`${styles.btn} ${styles.btnBack}`} onClick={() => navigate(-1)}>
-            ⬅️ Volver
-          </button>
-        </div>
-      </center>
+      <div className={styles.backButtonWrapper}>
+        <button className={`${styles.btn} ${styles.btnBack}`} onClick={() => navigate(-1)}>
+          ⬅ Volver
+        </button>
+      </div>
 
       {/* ========================================
           MODAL DE DETALLES MEJORADO
@@ -1121,9 +1240,8 @@ export default function ClimateDashboard({ currentUser }) {
 
             {/* Cuerpo del modal */}
             <div className={styles.modalBody}>
-              {showMap ? (
-                // LAYOUT CON MAPA Y SERIE TEMPORAL
-                <div className={styles.modalMapLayout}>
+              {/* MAPA Y SERIE TEMPORAL AL INICIO */}
+              <div className={styles.modalMapLayout}>
                   {/* Sección del Mapa */}
                   <div className={styles.modalMapSection}>
                     <h4>🗺️ Ubicación en el Mapa</h4>
@@ -1290,180 +1408,164 @@ export default function ClimateDashboard({ currentUser }) {
                     </div>
                   )}
                 </div>
-              ) : (
-                // VISTA DE DETALLES COMPLETA (sin mapa)
-                <>
-                  <div className={styles.modalSection}>
-                    <h4>👤 Información del Usuario</h4>
-                    <div className={styles.modalGrid}>
-                      <div className={styles.modalItem}>
-                        <strong>Nombre:</strong> {modalData.nombre}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Rol:</strong> {modalData.rol}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Email:</strong> {modalData.email}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Fecha de descarga:</strong> {modalData.fecha}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Hora de descarga:</strong> {modalData.hora}
-                      </div>
+
+              {/* INFORMACIÓN COMPLETA DESPUÉS DEL MAPA */}
+              <div className={styles.detailsGrid}>
+                <div className={styles.modalSection}>
+                  <h4>👤 Información del Usuario</h4>
+                  <div className={styles.modalGrid}>
+                    <div className={styles.modalItem}>
+                      <strong>Nombre:</strong> {modalData.nombre}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Rol:</strong> {modalData.rol}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Email:</strong> {modalData.email}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Fecha de descarga:</strong> {modalData.fecha}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Hora de descarga:</strong> {modalData.hora}
                     </div>
                   </div>
+                </div>
 
+                <div className={styles.modalSection}>
+                  <h4>📍 Ubicación</h4>
+                  <div className={styles.modalGrid}>
+                    <div className={styles.modalItem}>
+                      <strong>Lugar:</strong> {modalData.lugar}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Tipo:</strong> {modalData.tipoConsulta}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Latitud:</strong> {modalData.latitud}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Longitud:</strong> {modalData.longitud}
+                    </div>
+                    {modalData.puntosMuestreados && (
+                      <div className={styles.modalItem}>
+                        <strong>Puntos muestreados:</strong> {modalData.puntosMuestreados.length}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.modalSection}>
+                  <h4>🌡️ Datos Climáticos</h4>
+                  <div className={styles.modalGrid}>
+                    <div className={styles.modalItem}>
+                      <strong>Variable:</strong> {modalData.variable}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Rango temporal:</strong> {modalData.rangoTemporal}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Valor actual:</strong> {modalData.valorActual} {modalData.unidad}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Unidad:</strong> {modalData.unidad}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Promedio:</strong> {modalData.promedio} {modalData.unidad}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Máximo:</strong> {modalData.maximo} {modalData.unidad}
+                    </div>
+                    <div className={styles.modalItem}>
+                      <strong>Mínimo:</strong> {modalData.minimo} {modalData.unidad}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Estado de los Datos */}
+                {modalData.estadoDatos && (
                   <div className={styles.modalSection}>
-                    <h4>📍 Ubicación</h4>
+                    <h4>📡 Estado de los Datos</h4>
                     <div className={styles.modalGrid}>
                       <div className={styles.modalItem}>
-                        <strong>Lugar:</strong> {modalData.lugar}
+                        <strong>Estado:</strong> {modalData.estadoDatos.mensaje || 'N/A'}
                       </div>
                       <div className={styles.modalItem}>
-                        <strong>Tipo:</strong> {modalData.tipoConsulta}
+                        <strong>En tiempo real:</strong> {modalData.estadoDatos.enTiempoReal === 'true' || modalData.estadoDatos.enTiempoReal === true ? 'Sí' : 'No'}
                       </div>
-                      <div className={styles.modalItem}>
-                        <strong>Latitud:</strong> {modalData.latitud}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Longitud:</strong> {modalData.longitud}
-                      </div>
-                      {modalData.puntosMuestreados && (
+                      {modalData.estadoDatos.fechaDatos && (
                         <div className={styles.modalItem}>
-                          <strong>Puntos muestreados:</strong> {modalData.puntosMuestreados.length}
+                          <strong>Fecha de datos:</strong> {new Date(modalData.estadoDatos.fechaDatos).toLocaleDateString()}
+                        </div>
+                      )}
+                      {modalData.estadoDatos.fuenteAPI && (
+                        <div className={styles.modalItem}>
+                          <strong>Fuente de datos:</strong> {modalData.estadoDatos.fuenteAPI}
                         </div>
                       )}
                     </div>
                   </div>
+                )}
 
+                {/* Rango de Fechas de Consulta */}
+                {modalData.fechaInicio && modalData.fechaFin && (
                   <div className={styles.modalSection}>
-                    <h4>🌡️ Datos Climáticos</h4>
+                    <h4>📅 Rango de Consulta</h4>
                     <div className={styles.modalGrid}>
                       <div className={styles.modalItem}>
-                        <strong>Variable:</strong> {modalData.variable}
+                        <strong>Fecha inicio:</strong> {modalData.fechaInicio}
                       </div>
                       <div className={styles.modalItem}>
-                        <strong>Rango temporal:</strong> {modalData.rangoTemporal}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Valor actual:</strong> {modalData.valorActual} {modalData.unidad}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Unidad:</strong> {modalData.unidad}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Promedio:</strong> {modalData.promedio} {modalData.unidad}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Máximo:</strong> {modalData.maximo} {modalData.unidad}
-                      </div>
-                      <div className={styles.modalItem}>
-                        <strong>Mínimo:</strong> {modalData.minimo} {modalData.unidad}
+                        <strong>Fecha fin:</strong> {modalData.fechaFin}
                       </div>
                     </div>
                   </div>
-
-                  {/* Estado de los Datos */}
-                  {modalData.estadoDatos && (
-                    <div className={styles.modalSection}>
-                      <h4>📡 Estado de los Datos</h4>
-                      <div className={styles.modalGrid}>
-                        <div className={styles.modalItem}>
-                          <strong>Estado:</strong> {modalData.estadoDatos.mensaje || 'N/A'}
-                        </div>
-                        <div className={styles.modalItem}>
-                          <strong>En tiempo real:</strong> {modalData.estadoDatos.enTiempoReal === 'true' || modalData.estadoDatos.enTiempoReal === true ? 'Sí' : 'No'}
-                        </div>
-                        {modalData.estadoDatos.fechaDatos && (
-                          <div className={styles.modalItem}>
-                            <strong>Fecha de datos:</strong> {new Date(modalData.estadoDatos.fechaDatos).toLocaleDateString()}
-                          </div>
-                        )}
-                        {modalData.estadoDatos.fuenteAPI && (
-                          <div className={styles.modalItem}>
-                            <strong>Fuente de datos:</strong> {modalData.estadoDatos.fuenteAPI}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Rango de Fechas de Consulta */}
-                  {modalData.fechaInicio && modalData.fechaFin && (
-                    <div className={styles.modalSection}>
-                      <h4>📅 Rango de Consulta</h4>
-                      <div className={styles.modalGrid}>
-                        <div className={styles.modalItem}>
-                          <strong>Fecha inicio:</strong> {modalData.fechaInicio}
-                        </div>
-                        <div className={styles.modalItem}>
-                          <strong>Fecha fin:</strong> {modalData.fechaFin}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Serie Temporal */}
-                  {modalData.serieTemporal && modalData.serieTemporal.length > 0 && (
-                    <div className={styles.modalSection}>
-                      <h4>📈 Serie Temporal ({modalData.serieTemporal.length} registros)</h4>
-                      <div className={styles.serieTemporalContainer}>
-                        {modalData.serieTemporal.slice(0, 10).map((punto, index) => (
-                          <div key={index} className={styles.serieItem}>
-                            <span className={styles.serieDate}>{punto.date}</span>
-                            <span className={styles.serieValue}>{punto.value} {modalData.unidad}</span>
-                          </div>
-                        ))}
-                        {modalData.serieTemporal.length > 10 && (
-                          <div className={styles.serieMore}>
-                            ... y {modalData.serieTemporal.length - 10} registros más
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Footer del modal CON BOTONES MEJORADOS */}
             <div className={styles.modalFooter}>
-              <button 
-                className={`${styles.btn} ${styles.btnMap}`} 
-                onClick={() => setShowMap(!showMap)}
-              >
-                {showMap ? '📋 Ver Detalles' : '🗺️ Ver Mapa'}
-              </button>
-              <button 
-                className={`${styles.btn} ${styles.btnDownload}`} 
+              <button
+                className={`${styles.btn} ${styles.btnDownload}`}
                 onClick={handleDownloadModalJSON}
+                title="Descargar datos en formato JSON"
               >
-                📥 JSON
+                <img src="/iconos/download.png" alt="Descargar" style={{ width: '18px', height: '18px', marginRight: '8px', filter: 'brightness(0) invert(1)' }} />
+                Descargar JSON
               </button>
-              <button 
-                className={`${styles.btn} ${styles.btnPdf}`} 
+              <button
+                className={`${styles.btn} ${styles.btnPdf}`}
                 onClick={handleDownloadModalPDF}
-                title="Descargar PDF completo"
+                title="Descargar reporte completo en PDF"
               >
-                📄 PDF
+                <img src="/iconos/file-pdf.png" alt="PDF" style={{ width: '18px', height: '18px', marginRight: '8px', filter: 'brightness(0) invert(1)' }} />
+                Descargar PDF
               </button>
-              
+
               {/* BOTÓN NUEVO: ELIMINAR REGISTRO */}
-              <button 
-                className={`${styles.btn} ${styles.btnDelete}`} 
+              <button
+                className={`${styles.btn} ${styles.btnDelete}`}
                 onClick={() => handleDeleteRecord(modalData._id)}
                 disabled={deletingId === modalData._id}
                 title="Eliminar este registro permanentemente"
               >
-                {deletingId === modalData._id ? '⏳ Eliminando...' : '🗑️ Eliminar'}
+                {deletingId === modalData._id ? (
+                  <>⏳ Eliminando...</>
+                ) : (
+                  <>
+                    <img src="/iconos/trash.png" alt="Eliminar" style={{ width: '18px', height: '18px', marginRight: '8px', filter: 'brightness(0) invert(1)' }} />
+                    Eliminar Registro
+                  </>
+                )}
               </button>
-              
-              <button 
-                className={`${styles.btn} ${styles.btnSecondary}`} 
+
+              <button
+                className={`${styles.btn} ${styles.btnSecondary}`}
                 onClick={handleCloseModal}
+                title="Cerrar ventana de detalles"
               >
-                Cerrar
+                ✕ Cerrar
               </button>
             </div>
           </div>

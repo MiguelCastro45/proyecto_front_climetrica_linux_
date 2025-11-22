@@ -131,6 +131,56 @@ def profile(request):
 
 
 # ============================
+# Actualizar perfil propio
+# ============================
+@jwt_required
+@csrf_exempt
+def update_own_profile(request):
+    """
+    Permite a un usuario actualizar su propio perfil.
+    No puede modificar: role, identification, status
+    Puede modificar: first_name, last_name, email, phone, password
+    """
+    if request.method != "PUT":
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+    try:
+        body = json.loads(request.body)
+        user_id = request.user["user_id"]
+
+        # Campos permitidos para actualizar
+        allowed_fields = ["first_name", "last_name", "email", "phone"]
+        update_fields = {k: v for k, v in body.items() if k in allowed_fields}
+
+        # Validar email duplicado si se está cambiando
+        if "email" in update_fields:
+            email_lower = update_fields["email"].lower()
+            existing_email = users_col.find_one({
+                "email": {"$regex": f"^{email_lower}$", "$options": "i"},
+                "_id": {"$ne": ObjectId(user_id)}
+            })
+            if existing_email:
+                return JsonResponse({"error": "Ya existe otro usuario con ese correo electrónico"}, status=400)
+
+        # Manejar cambio de contraseña
+        if body.get("password"):
+            update_fields["password_hash"] = hash_password(body["password"])
+
+        # Agregar timestamp de actualización
+        update_fields["updated_at"] = datetime.utcnow()
+
+        # Actualizar usuario
+        users_col.update_one({"_id": ObjectId(user_id)}, {"$set": update_fields})
+
+        # Obtener usuario actualizado
+        user = sanitize_user(users_col.find_one({"_id": ObjectId(user_id)}))
+
+        return JsonResponse({"user": user}, status=200)
+    except Exception as e:
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# ============================
 # Endpoints de administración
 # ============================
 
@@ -187,23 +237,78 @@ def delete_user(request, user_id):
 
 def get_climate_data(request):
     """
-    Obtener datos climáticos con filtro opcional por usuario
-    Query params: ?userId=<id>
+    Obtener datos climáticos con filtros opcionales
+    Query params:
+        ?userId=<id>
+        ?fecha=<YYYY-MM-DD>
+        ?lugar=<texto>
+        ?variable=<nombre_variable>
     """
     try:
-        # Obtener filtro de usuario si existe
+        # Obtener filtros de los query params
         user_id = request.GET.get('userId')
+        fecha = request.GET.get('fecha')
+        lugar = request.GET.get('lugar')
+        variable = request.GET.get('variable')
 
-        # Construir query
+        # Construir query de MongoDB
         query = {}
+
+        # Filtro por usuario
         if user_id:
             query['usuario._id'] = user_id
+
+        # Filtro por FECHA en la serie temporal
+        # La serie temporal contiene los datos climáticos históricos con sus fechas específicas
+        # Ejemplo: serieTemporal: [{date: "2025-11-15", value: "18.5"}, {date: "2025-11-16", value: "19.2"}]
+        if fecha:
+            try:
+                # Buscar registros que contengan la fecha en su serieTemporal
+                query['datosClimaticos.serieTemporal'] = {
+                    '$elemMatch': {
+                        'date': {'$regex': f'^{fecha}', '$options': 'i'}
+                    }
+                }
+                print(f"📅 Buscando registros con datos en la fecha: {fecha} (en serieTemporal)")
+            except Exception as e:
+                print(f"⚠️ Error procesando filtro de fecha: {e}")
+                pass  # Si hay error, ignorar el filtro
+
+        # Filtro por lugar (búsqueda parcial, case-insensitive)
+        if lugar:
+            query['consulta.lugar'] = {'$regex': lugar, '$options': 'i'}
+
+        # Filtro por variable (búsqueda exacta)
+        if variable:
+            query['consulta.variable'] = variable
+
+        print(f"🔍 Query MongoDB: {query}")
 
         # Obtener datos con _id incluido para poder eliminar
         data = []
         for doc in climate_data_col.find(query):
             doc['_id'] = str(doc['_id'])  # Convertir ObjectId a string
+
+            # DEBUG: Mostrar fechaDatos de cada documento encontrado
+            if fecha:
+                fecha_datos = doc.get('estadoDatos', {}).get('fechaDatos', 'N/A')
+                print(f"  📋 Doc encontrado - estadoDatos.fechaDatos: {fecha_datos}")
+
             data.append(doc)
+
+        print(f"✅ Documentos encontrados: {len(data)}")
+
+        # DEBUG EXTRA: Si se buscó por fecha y no hay resultados, mostrar un documento de ejemplo
+        if fecha and len(data) == 0:
+            sample = climate_data_col.find_one({'usuario._id': user_id} if user_id else {})
+            if sample:
+                print(f"⚠️ NO se encontraron resultados para fecha: {fecha}")
+                print(f"   Ejemplo de documento en BD - estadoDatos.fechaDatos: {sample.get('estadoDatos', {}).get('fechaDatos', 'N/A')}")
+                # Mostrar también las primeras fechas de la serie temporal
+                serie = sample.get('datosClimaticos', {}).get('serieTemporal', [])
+                if serie and len(serie) > 0:
+                    print(f"   Primera fecha en serieTemporal: {serie[0].get('date', 'N/A')}")
+                    print(f"   Última fecha en serieTemporal: {serie[-1].get('date', 'N/A')}")
 
         return JsonResponse({"status": "success", "data": data}, safe=False)
     except Exception as e:

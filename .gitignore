@@ -3,17 +3,23 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-env/
-venv/
 *.sqlite3
 
 # Django
 /staticfiles/
 media/
 
+# Backend
+backend/venv/
+backend/env/
+backend/.env
+
 # Node / React
 node_modules/
-build/
+frontend/build/
+
+# Frontend
+frontend/.env
 
 # VSCode / IDE
 .vscode/

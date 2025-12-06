@@ -1,0 +1,1100 @@
+/**
+ * ============================================================================
+ * ESTILOS: CLIMATE DASHBOARD MEJORADO
+ * ============================================================================
+ * 
+ * Mejoras:
+ * - Botón de eliminar con estilo danger
+ * - Mejor responsive design
+ * - Animaciones suaves
+ */
+
+/* ========================================
+   CONTENEDOR PRINCIPAL
+   ======================================== */
+.dashboardContainer {
+  font-family: "Poppins", sans-serif;
+  padding: 10px;
+  max-width: 1600px;
+  margin: 0 auto;
+  height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+.headerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  font-weight: 600;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ========================================
+   BOTONES MEJORADOS - GRADIENTE AZUL-VERDE VIVIDO
+   ======================================== */
+.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.3);
+}
+
+
+.btnMore {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 0.9em;
+}
+
+.btnMore:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+}
+
+.btnDownload {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+}
+
+.btnDownload:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+}
+
+/* ========================================
+   CONTENEDOR DEL BOTÓN VOLVER
+   ======================================== */
+.backButtonWrapper {
+  display: flex;
+  justify-content: flex-start;
+  padding: 15px 0 10px 0;
+  flex-shrink: 0;
+}
+
+.btnBack {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+  font-weight: 500;
+  padding: 10px 24px;
+  font-size: 0.95em;
+  box-shadow: 0 2px 8px rgba(59, 89, 152, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnBack:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.4);
+}
+
+.btnSecondary {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+}
+
+.btnSecondary:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+}
+
+.btnMap {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+}
+
+.btnMap:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+}
+
+.btnPdf {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+}
+
+.btnPdf:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.btnPdf:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* NUEVO: Botón de eliminar */
+.btnDelete {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+}
+
+.btnDelete:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4);
+}
+
+.btnDelete:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* ========================================
+   LOADING Y ERROR
+   ======================================== */
+.loading,
+.error {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 50px;
+}
+
+.loading {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.error {
+  color: #ff5722;
+}
+
+/* ========================================
+   FILTROS
+   ======================================== */
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.filterInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.filterInput:focus {
+  outline: none;
+  border-color: #2E86DE;
+  box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.2);
+}
+
+.filterInput::placeholder {
+  color: #999;
+}
+
+/* ========================================
+   TABLA
+   ======================================== */
+.dataTableContainer {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.15);
+  position: relative;
+  min-height: 0;
+  display: block;
+}
+
+.dataTableContainer::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dataTableContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.dataTableContainer::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  border-radius: 10px;
+}
+
+.dataTableContainer::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+}
+
+.climateTable {
+  width: 99%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+}
+
+.climateTable thead {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.climateTable thead tr {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+}
+
+.climateTable thead th {
+  padding: 14px 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.climateTable thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.climateTable thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.climateTable tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.climateTable tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.climateTable tbody tr:hover {
+  background: linear-gradient(90deg, rgba(59, 89, 152, 0.05) 0%, rgba(46, 134, 222, 0.05) 100%);
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(59, 89, 152, 0.1);
+}
+
+.climateTable tbody td {
+  padding: 14px 12px;
+  text-align: center;
+  color: #333;
+  font-size: 0.95em;
+}
+
+/* ========================================
+   MODAL OVERLAY
+   ======================================== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   MODAL CONTENT
+   ======================================== */
+.modalContent {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 1800px;
+  width: 100%;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+.modalContent.modalWithMap {
+  max-width: 1900px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   MODAL HEADER
+   ======================================== */
+.modalHeader {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  color: #fff;
+  padding: 3px 15px;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.3em;
+  font-weight: 100;
+}
+
+.modalCloseBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  font-size: 1.5em;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+/* ========================================
+   PESTAÑAS DEL MODAL
+   ======================================== */
+.modalTabs {
+  display: flex;
+  gap: 0;
+  background: #f5f5f5;
+  border-bottom: 2px solid #e0e0e0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.tabButton:hover {
+  background: rgba(59, 89, 152, 0.05);
+  color: #3B5998;
+}
+
+.tabActive {
+  background: #fff;
+  color: #3B5998;
+  border-bottom: 3px solid #3B5998;
+  font-weight: 600;
+}
+
+/* ========================================
+   MODAL BODY
+   ======================================== */
+.modalBody {
+  padding: 10px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modalBody::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modalBody::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  border-radius: 10px;
+}
+
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2d4373 0%, #1c5fa8 100%);
+}
+
+/* ========================================
+   SECCIONES DEL MODAL
+   ======================================== */
+.detailsGrid {
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.modalSection {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modalSection:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.modalSection h4 {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.modalItem {
+  background: #f8f9fa;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  border-image: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%) 1;
+  transition: all 0.2s ease;
+}
+
+.modalItem:hover {
+  background: linear-gradient(90deg, rgba(59, 89, 152, 0.05) 0%, rgba(46, 134, 222, 0.05) 100%);
+  transform: translateX(3px);
+}
+
+.modalItem strong {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* ========================================
+   LAYOUT CON MAPA Y SERIE TEMPORAL
+   ======================================== */
+.modalMapLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+}
+
+.modalMapSection {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+.modalMapSection h4 {
+  font-size: 25px;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+.mapWrapper {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 20px solid #ffffff;
+}
+
+.modalStatsCompact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, #ffffff 100%, #ffffff 100%);
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.modalTimeSeriesSection {
+  width: 95%;
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-top: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modalTimeSeriesSection h4 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+.chartContainer {
+  width: 95%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chartContainer canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* ========================================
+   SERIE TEMPORAL
+   ======================================== */
+.serieTemporalContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.serieItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  background: #fff;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+  border-image: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%) 1;
+  font-size: 0.8em;
+}
+
+.serieDate {
+  color: #666;
+  font-weight: 500;
+  font-size: 0.85em;
+}
+
+.serieValue {
+  background: linear-gradient(135deg, #3B5998 0%, #2E86DE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+.serieMore {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  font-size: 0.85em;
+  padding: 6px;
+}
+
+/* ========================================
+   MODAL FOOTER
+   ======================================== */
+.modalFooter {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-top: 1px solid #e9ecef;
+  flex-shrink: 0;
+}
+
+/* ========================================
+   LOADING INDICATOR PARA PDF
+   ======================================== */
+.pdfLoading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 25px 50px;
+  border-radius: 12px;
+  z-index: 10000;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.pdfLoading::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ffffff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+@media (min-width: 1200px) {
+  .modalMapLayout {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 25px;
+  }
+
+  .modalMapSection {
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+
+  .modalStatsCompact {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .modalTimeSeriesSection {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .detailsGrid {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboardContainer {
+    padding: 10px;
+    height: 100vh;
+  }
+
+  .title {
+    font-size: 1.5em;
+  }
+
+  .headerActions {
+    margin-bottom: 15px;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+
+  .filterInput {
+    min-width: 100%;
+  }
+
+  .climateTable {
+    font-size: 0.85em;
+  }
+
+  .climateTable thead th,
+  .climateTable tbody td {
+    padding: 10px 8px;
+  }
+
+  .modalContent {
+    max-width: 98%;
+    margin: 5px;
+  }
+
+  .modalContent.modalWithMap {
+    max-width: 98%;
+  }
+
+  .modalHeader {
+    padding: 12px 15px;
+  }
+
+  .modalHeader h3 {
+    font-size: 1.2em;
+  }
+
+  .modalBody {
+    padding: 15px;
+  }
+
+  .modalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+  }
+
+  .modalFooter .btn {
+    width: 100%;
+  }
+
+  .backButtonWrapper {
+    padding: 10px 0;
+  }
+
+  .btnBack {
+    padding: 8px 20px;
+    font-size: 0.9em;
+  }
+
+  .buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .serieTemporalContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .modalMapLayout {
+    gap: 15px;
+    padding: 10px;
+  }
+
+  .detailsGrid {
+    padding: 10px;
+  }
+
+  .modalStatsCompact {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .chartContainer {
+    padding: 10px;
+  }
+
+  .chartContainer canvas {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.3em;
+  }
+
+  .climateTable {
+    font-size: 0.8em;
+  }
+
+  .modalBody {
+    padding: 12px;
+  }
+
+  .modalSection h4 {
+    font-size: 1em;
+  }
+
+  .modalMapSection h4,
+  .modalTimeSeriesSection h4 {
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   ESTILOS PARA LA PESTAÑA DE CULTIVO
+   ======================================== */
+.cultivoAnalysisContainer {
+  padding: 20px;
+}
+
+.cultivoHeader {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 2px solid #dee2e6;
+}
+
+/* Grid de Aptitudes */
+.aptitudesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.aptitudCard {
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.aptitudCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #3B5998;
+}
+
+.aptitudIcon {
+  font-size: 2em;
+  margin-bottom: 8px;
+}
+
+.aptitudLabel {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.aptitudValue {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.aptitudBar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.aptitudProgress {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 4px;
+}
+
+/* Grid de Parámetros */
+.parametrosGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.parametroCard {
+  background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+  border: 2px solid #dee2e6;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.parametroCard:hover {
+  border-color: #3B5998;
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.1);
+}
+
+.parametroHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.parametroIcon {
+  font-size: 1.5em;
+}
+
+.parametroTitle {
+  font-size: 1em;
+  font-weight: 600;
+  color: #333;
+}
+
+.parametroRange {
+  font-size: 1.1em;
+  color: #3B5998;
+  font-weight: 500;
+  text-align: center;
+  padding: 8px;
+  background: rgba(59, 89, 152, 0.05);
+  border-radius: 8px;
+}
+
+/* Lista de Riesgos */
+.riesgosList {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0 0;
+}
+
+.riesgoItem {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 0.95em;
+}
+
+.riesgoItem::before {
+  content: "⚠️ ";
+  margin-right: 8px;
+}
+
+/* Responsive para pestaña de cultivo */
+@media (max-width: 768px) {
+  .cultivoAnalysisContainer {
+    padding: 15px;
+  }
+
+  .aptitudesGrid,
+  .parametrosGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .cultivoHeader div {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .aptitudValue {
+    font-size: 1.5em;
+  }
+
+  .tabButton {
+    font-size: 0.9em;
+    padding: 10px 12px;
+  }
+}

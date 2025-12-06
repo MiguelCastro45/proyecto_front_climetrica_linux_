@@ -1,0 +1,303 @@
+/* Contenedor centrado */
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Formulario */
+.register-form {
+  background: #ffffff;
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  width: 700px;
+  max-width: 95%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease;
+}
+
+.register-form:hover {
+  transform: translateY(-3px);
+}
+
+/* Título */
+.register-form h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+}
+
+/* Fila de formulario */
+.form-row {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.form-row .input-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Inputs y select */
+.register-form input,
+.register-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.register-form input:focus,
+.register-form select:focus {
+  border-color: #2E86DE;
+  box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.15);
+}
+
+.register-form select {
+  margin-bottom: 0;
+}
+
+/* Input group full width */
+.input-group.full-width {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Botones en fila */
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 5px;
+}
+
+.form-buttons .btn-blue,
+.form-buttons .btn-back {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Botones */
+.btn-blue {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(59, 89, 152, 0.2);
+  margin-bottom: 6px;
+}
+
+.btn-blue:hover {
+  background: linear-gradient(135deg, #2d4373, #1c5fa8);
+  box-shadow: 0 5px 15px rgba(59, 89, 152, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-blue:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-back {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-back:hover {
+  background: linear-gradient(135deg, #e0e0e0, #d0d0d0);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.btn-back:active {
+  transform: scale(0.98);
+}
+
+/* Estilos para validación de formulario */
+.input-group {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.input-group input {
+  margin-bottom: 0;
+}
+
+.input-error {
+  border-color: #dc2626 !important;
+  background-color: rgba(220, 38, 38, 0.05) !important;
+}
+
+.error-text {
+  display: block;
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-left: 2px;
+  font-weight: 500;
+}
+
+/* Wrapper para contraseña con indicador */
+.password-input-wrapper {
+  width: 100%;
+}
+
+/* Indicador de fortaleza de contraseña */
+.password-strength-indicator {
+  margin-top: 6px;
+  width: 100%;
+}
+
+.strength-bar-container {
+  width: 100%;
+  height: 5px;
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.strength-bar {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 3px;
+}
+
+.strength-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  margin-left: 2px;
+}
+
+/* Feedback de contraseña */
+.password-feedback {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background-color: rgba(239, 68, 68, 0.05);
+  border-left: 3px solid #ef4444;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.password-feedback.success {
+  background-color: rgba(34, 197, 94, 0.05);
+  border-left-color: #22c55e;
+  color: #15803d;
+  font-weight: 500;
+}
+
+.feedback-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #991b1b;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.feedback-list {
+  margin: 0;
+  padding-left: 14px;
+  color: #dc2626;
+  line-height: 1.5;
+}
+
+.feedback-list li {
+  margin-bottom: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .register-form {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-row .input-group {
+    margin-bottom: 10px;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-buttons .btn-blue,
+  .form-buttons .btn-back {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .register-form {
+    padding: 18px;
+  }
+
+  .register-form h2 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+
+  .register-form input,
+  .register-form select {
+    font-size: 14px;
+    padding: 11px 13px;
+  }
+
+  .btn-blue,
+  .btn-back {
+    font-size: 15px;
+    padding: 12px 0;
+  }
+
+  .password-feedback {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .feedback-title {
+    font-size: 10px;
+  }
+
+  .strength-label {
+    font-size: 11px;
+  }
+}

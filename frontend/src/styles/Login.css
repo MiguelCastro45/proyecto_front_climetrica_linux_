@@ -1,0 +1,291 @@
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+}
+
+.login-card {
+  background: #ffffff;
+  padding: 30px;
+  width: 380px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-3px);
+}
+
+.login-card h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+}
+
+.input-with-icon {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 14px 16px 14px 45px;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.login-form input:focus {
+  border-color: #2E86DE;
+  box-shadow: 0 0 0 3px rgba(46, 134, 222, 0.15);
+  outline: none;
+}
+
+.btn {
+  width: 100%;
+  padding: 14px 0;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #94a3b8, #64748b) !important;
+}
+
+.btn-blue {
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(59, 89, 152, 0.2);
+}
+
+.btn-blue:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2d4373, #1c5fa8);
+  box-shadow: 0 5px 15px rgba(59, 89, 152, 0.35);
+}
+
+/* Spinner de carga */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Notificaciones tipo Toast (esquina superior derecha) ===== */
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  max-width: 400px;
+  animation: slideInFromRight 0.4s ease;
+}
+
+.notification-toast.notification-error {
+  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  border: 2px solid #dc2626;
+  border-left: 4px solid #dc2626;
+  color: #991b1b;
+}
+
+.notification-toast.notification-success {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border: 2px solid #16a34a;
+  border-left: 4px solid #16a34a;
+  color: #15803d;
+}
+
+.notification-icon {
+  font-size: 20px;
+  font-weight: bold;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.notification-toast.notification-error .notification-icon {
+  color: #dc2626;
+  font-size: 22px;
+}
+
+.notification-toast.notification-success .notification-icon {
+  color: #16a34a;
+  font-size: 22px;
+}
+
+.notification-text {
+  flex: 1;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* Animación de entrada desde la derecha */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Animación de salida hacia la derecha */
+@keyframes slideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+.login-links {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-links button {
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  color: #333;
+  width: 100%;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.login-links button:hover {
+  background: linear-gradient(135deg, #e0e0e0, #d0d0d0);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.login-links button:active {
+  transform: scale(0.98);
+}
+
+/* Sugerencias de email */
+.email-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.email-suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.email-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.email-suggestion-item:hover {
+  background: linear-gradient(90deg, rgba(59, 89, 152, 0.08), rgba(46, 134, 222, 0.08));
+  color: #3B5998;
+}
+
+/* Responsive para notificaciones toast */
+@media (max-width: 480px) {
+  .notification-toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+
+  .notification-toast .notification-icon {
+    font-size: 18px;
+  }
+}

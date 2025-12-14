@@ -1311,10 +1311,10 @@
 }
 
 .um-modal-card {
-  width: 1100px;
-  max-width: 100vw;
+  width: 1250px;
+  max-width: 95vw;
   height: auto;
-  max-height: 94vh;
+  max-height: 88vh;
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1370,7 +1370,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 20px 20px 10px 20px;
+  padding: 16px 20px 12px 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(255, 255, 255, 0.98);
   position: sticky;
@@ -1383,10 +1383,10 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .um-modal-description {
@@ -1605,7 +1605,7 @@
   justify-content: center;
   align-items: center;
   gap: 10px;
-  padding: 12px 20px 20px 20px;
+  padding: 12px 20px 16px 20px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   background: rgba(255, 255, 255, 0.98);
   position: sticky;
@@ -2864,18 +2864,18 @@
    ANÁLISIS DE CULTIVOS - CONTENIDO DEL MODAL
    ============================================ */
 .um-crop-analysis {
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
 }
 
 /* Encabezado del cultivo */
 .crop-header-card {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  padding: 1.25rem;
   background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border: 2px solid #e5e7eb;
 }
 
@@ -2900,10 +2900,10 @@
 
 /* Aptitud Total */
 .crop-aptitud-total-card {
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 12px;
   border: 3px solid;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
@@ -2936,17 +2936,17 @@
 /* Detalles de Aptitud */
 .crop-details-section {
   background: #f9fafb;
-  padding: 1.25rem;
+  padding: 1rem;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .crop-details-section h5,
 .crop-conditions-section h5,
 .crop-risks-section h5,
 .crop-info-section h5 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
   color: #1f2937;
   font-weight: 700;
 }
@@ -2954,7 +2954,7 @@
 .crop-aptitud-bars {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .crop-bar-item {
@@ -2995,9 +2995,9 @@
 /* Condiciones Climáticas */
 .crop-conditions-section {
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  padding: 1.25rem;
+  padding: 1rem;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border: 2px solid #93c5fd;
 }
 
@@ -3008,14 +3008,14 @@
 .crop-conditions-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .crop-condition-box {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
+  gap: 0.4rem;
+  padding: 0.875rem;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 10px;
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -3036,9 +3036,9 @@
 /* Riesgos */
 .crop-risks-section {
   background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-  padding: 1.25rem;
+  padding: 1rem;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   border: 2px solid #fca5a5;
 }
 
@@ -3055,8 +3055,8 @@
 .crop-risks-list li {
   position: relative;
   color: #7f1d1d;
-  margin-bottom: 0.625rem;
-  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
   padding-left: 0.75rem;
   font-weight: 500;
 }
@@ -3074,10 +3074,23 @@
   margin-bottom: 0;
 }
 
+/* Fuentes de Datos */
+.crop-sources-section {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  border: 2px solid #fde047;
+}
+
+.crop-sources-section h5 {
+  color: #854d0e;
+}
+
 /* Información del Cultivo */
 .crop-info-section {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  padding: 1.25rem;
+  padding: 1rem;
   border-radius: 12px;
   border: 2px solid #86efac;
 }
@@ -3114,6 +3127,40 @@
   color: #065f46;
   font-weight: 600;
   text-align: right;
+}
+
+/* Estilos para badges de fuentes de datos */
+.data-source-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.data-source-badge.real-data {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid #059669;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+}
+
+.data-source-badge.real-data:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.35);
+}
+
+.data-source-badge.estimated-data {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  border: 1px solid #d97706;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.25);
+}
+
+.data-source-badge.estimated-data:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.35);
 }
 
 /* Responsive para análisis de cultivos */
@@ -3394,3 +3441,158 @@
     min-width: 100px;
   }
 }
+
+/* ============================================================================
+   ESTILOS PARA SECCIÓN DE IA (Inteligencia Artificial)
+   ============================================================================ */
+
+/* Sección principal de IA con gradiente morado */
+.ai-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+}
+
+.ai-section h5 {
+  color: white !important;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ai-confidence {
+  background: rgba(255, 255, 255, 0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Lista de recomendaciones de IA */
+.crop-recommendations-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+
+.crop-recommendation-item {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 4px solid #4caf50;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crop-recommendation-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.15);
+}
+
+.crop-recommendation-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Texto de manejo agronómico específico */
+.manejo-text {
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 100%);
+  padding: 16px;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
+  line-height: 1.7;
+  font-size: 14px;
+  color: #4b5563;
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.1);
+}
+
+/* Lista de riesgos mejorada */
+.crop-risk-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+
+.crop-risk-item {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  padding: 14px;
+  margin-bottom: 12px;
+  border-left: 4px solid #f44336;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.crop-risk-item:hover {
+  transform: translateX(4px);
+}
+
+.crop-risk-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Mensaje cuando no hay riesgos */
+.no-risks {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  padding: 16px;
+  border-radius: 8px;
+  color: #2e7d32;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.1);
+}
+
+/* Badge de indicador de IA activa */
+.ai-powered-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .ai-badge {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ai-confidence {
+    width: 100%;
+    text-align: center;
+  }
+
+  .crop-recommendation-item,
+  .crop-risk-item,
+  .manejo-text {
+    font-size: 13px;
+    padding: 12px;
+  }
+}
+

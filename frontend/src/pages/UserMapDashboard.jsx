@@ -28,6 +28,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image-more";
 import { handleAPIError } from "../utils/errorHandler";
+import API from "../api/api";
 import "../styles/UserMapDashboard.css";
 import PolygonDrawer from './PolygonDrawer';
 import { saveClimateData } from '../api/Save_climate_data_helper';
@@ -308,7 +309,11 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   
   // Rango de días para descargar datos
   const [downloadDateRange, setDownloadDateRange] = useState(7);
-  
+
+  // Cargar capas desde el backend
+  const [layerDefs, setLayerDefs] = useState(LAYER_DEFS);
+  const [loadingLayers, setLoadingLayers] = useState(true);
+
   // ========================================
   // FECHAS POR DEFECTO: Hoy y hace 7 días
   // ========================================
@@ -385,13 +390,57 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   }, [currentUser]);
 
   /**
+   * EFECTO: Cargar variables y capas desde el backend
+   */
+  useEffect(() => {
+    const loadVariables = async () => {
+      try {
+        const res = await API.get("/public/variables/");
+        const vars = res.data.variables;
+
+        // Construir layerDefs desde las variables del backend
+        const newLayerDefs = {};
+        vars.forEach(v => {
+          newLayerDefs[v.nombre] = {
+            type: v.configuracion_api.tipo,
+            layer: v.configuracion_api.layer,
+            format: v.configuracion_api.formato,
+            tileMatrixSet: v.configuracion_api.tile_matrix_set,
+            maxNativeZoom: v.configuracion_api.max_native_zoom,
+            opacity: v.configuracion_animacion?.opacidad || 0.9,
+            useLowResFallback: v.configuracion_api.tipo === "openweathermap",
+            apiName: v.configuracion_api.tipo.toUpperCase(),
+            legend: {
+              min: v.leyenda.min,
+              max: v.leyenda.max,
+              colors: v.leyenda.colores || [],
+              unit: v.unidad || ""
+            }
+          };
+        });
+
+        setLayerDefs(newLayerDefs);
+        setLoadingLayers(false);
+        console.log("✅ Capas cargadas desde el backend:", Object.keys(newLayerDefs));
+      } catch (error) {
+        console.error("❌ Error cargando variables:", error);
+        // Usar hardcodeadas como fallback
+        setLayerDefs(LAYER_DEFS);
+        setLoadingLayers(false);
+      }
+    };
+
+    loadVariables();
+  }, []); // Solo cargar una vez al montar
+
+  /**
    * EFECTO: Redibujar gráfico del panel lateral cuando selectedData cambie
    * Esto asegura que el gráfico se mantenga visible después de cerrar el modal
    */
   useEffect(() => {
     if (selectedData && selectedData.series && popupCanvasRef.current && !modalOpen) {
       setTimeout(() => {
-        drawMiniChart(popupCanvasRef.current, selectedData.series, LAYER_DEFS[activeVar].legend.colors);
+        drawMiniChart(popupCanvasRef.current, selectedData.series, layerDefs[activeVar].legend.colors);
       }, 100);
     }
   }, [selectedData, modalOpen, activeVar]);
@@ -403,7 +452,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   useEffect(() => {
     if (selectedData && selectedData.series && popupCanvasRef.current && !modalOpen && activeModalTab === 'clima') {
       setTimeout(() => {
-        drawMiniChart(popupCanvasRef.current, selectedData.series, LAYER_DEFS[activeVar].legend.colors);
+        drawMiniChart(popupCanvasRef.current, selectedData.series, layerDefs[activeVar].legend.colors);
       }, 50);
     }
   }, [activeModalTab, selectedData, modalOpen, activeVar]);
@@ -442,7 +491,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         lng: lng.toFixed(6),
         place,
         variable: activeVar,
-        unit: LAYER_DEFS[activeVar].legend.unit,
+        unit: layerDefs[activeVar].legend.unit,
         value: series[series.length - 1].value,
         series,
         mean: stats.mean,
@@ -490,9 +539,10 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   /**
    * EFECTO: Dibujar gráfico inicial cuando se abre el modal
    * Se ejecuta cuando el modal se abre y hay datos disponibles
+   * También se ejecuta cuando se cambia de pestaña para redibujar el gráfico
    */
   useEffect(() => {
-    if (modalOpen && selectedData && selectedData.series && modalCanvasRef.current) {
+    if (modalOpen && selectedData && selectedData.series && modalCanvasRef.current && activeModalTab === 'clima') {
       // Dibujar el gráfico con los datos existentes
       // Usar un timeout más largo para asegurar que el canvas esté completamente renderizado
       setTimeout(() => {
@@ -508,11 +558,11 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           }
 
           // Dibujar el gráfico con las dimensiones correctas
-          drawMiniChart(canvas, selectedData.series, LAYER_DEFS[activeVar].legend.colors);
+          drawMiniChart(canvas, selectedData.series, layerDefs[activeVar].legend.colors);
         }
       }, 150);
     }
-  }, [modalOpen, selectedData?.series, activeVar]); // Depender también de series y activeVar
+  }, [modalOpen, selectedData?.series, activeVar, activeModalTab]); // Incluir activeModalTab para redibujar al cambiar de pestaña
 
   /**
    * EFECTO: Actualizar serie de tiempo cuando cambien las fechas del modal
@@ -545,7 +595,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
         // Redibujar gráfico PRIMERO (antes de actualizar el estado) para evitar parpadeo
         if (modalCanvasRef.current) {
-          drawMiniChart(modalCanvasRef.current, series, LAYER_DEFS[activeVar].legend.colors);
+          drawMiniChart(modalCanvasRef.current, series, layerDefs[activeVar].legend.colors);
         }
 
         // Actualizar datos seleccionados con la nueva serie
@@ -1208,19 +1258,19 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     if (threshold.extreme && stats.lastValue >= threshold.extreme) {
       alerts.push({
         type: 'extreme',
-        message: `Valor extremo detectado: ${stats.lastValue} ${LAYER_DEFS[variableKey]?.legend?.unit || ''}`,
+        message: `Valor extremo detectado: ${stats.lastValue} ${layerDefs[variableKey]?.legend?.unit || ''}`,
         severity: 'high'
       });
     } else if (threshold.high && stats.lastValue >= threshold.high) {
       alerts.push({
         type: 'high',
-        message: `Valor alto: ${stats.lastValue} ${LAYER_DEFS[variableKey]?.legend?.unit || ''}`,
+        message: `Valor alto: ${stats.lastValue} ${layerDefs[variableKey]?.legend?.unit || ''}`,
         severity: 'medium'
       });
     } else if (threshold.low !== undefined && stats.lastValue <= threshold.low) {
       alerts.push({
         type: 'low',
-        message: `Valor bajo: ${stats.lastValue} ${LAYER_DEFS[variableKey]?.legend?.unit || ''}`,
+        message: `Valor bajo: ${stats.lastValue} ${layerDefs[variableKey]?.legend?.unit || ''}`,
         severity: 'medium'
       });
     }
@@ -1348,7 +1398,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         <div class="popup-coords">Lat ${lat.toFixed(4)} · Lon ${lng.toFixed(4)}</div>
       </div>
       <div class="popup-stats">
-        <div><strong>Valor actual:</strong> ${series[series.length - 1].value} ${LAYER_DEFS[activeVar].legend.unit}</div>
+        <div><strong>Valor actual:</strong> ${series[series.length - 1].value} ${layerDefs[activeVar].legend.unit}</div>
         <div><strong>Promedio:</strong> ${computeStats(series).mean} &nbsp; <strong>Máx:</strong> ${computeStats(series).max} &nbsp; <strong>Mín:</strong> ${computeStats(series).min}</div>
       </div>
     `;
@@ -1357,7 +1407,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     const canvas = L.DomUtil.create("canvas", "popup-canvas", popupEl);
     canvas.width = 380; 
     canvas.height = 140;
-    drawMiniChart(canvas, series, LAYER_DEFS[activeVar].legend.colors);
+    drawMiniChart(canvas, series, layerDefs[activeVar].legend.colors);
 
     // Botón para ampliar serie en modal
     const expandBtn = L.DomUtil.create("button", "popup-expand", popupEl);
@@ -1377,7 +1427,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         lng,
         place,
         series,
-        unit: LAYER_DEFS[activeVar].legend.unit || "",
+        unit: layerDefs[activeVar].legend.unit || "",
         mean: stats.mean,
         max: stats.max,
         min: stats.min
@@ -1481,7 +1531,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       lng: lng.toFixed(6),
       place,
       variable: activeVar,
-      unit: LAYER_DEFS[activeVar].legend.unit,
+      unit: layerDefs[activeVar].legend.unit,
       value: series[series.length - 1].value,
       series,
       mean: stats.mean,
@@ -1495,7 +1545,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     // Dibujar el mini gráfico en el panel lateral
     setTimeout(() => {
       if (popupCanvasRef.current) {
-        drawMiniChart(popupCanvasRef.current, series, LAYER_DEFS[activeVar].legend.colors);
+        drawMiniChart(popupCanvasRef.current, series, layerDefs[activeVar].legend.colors);
       }
     }, 100);
 
@@ -1595,7 +1645,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       lng: lng.toFixed(6),
       place: place,
       variable: activeVar,
-      unit: LAYER_DEFS[activeVar].legend.unit,
+      unit: layerDefs[activeVar].legend.unit,
       value: aggregatedSeries[aggregatedSeries.length - 1].value,
       series: aggregatedSeries,
       mean: stats.mean,
@@ -1879,7 +1929,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   async function drawModalSeries(variableKey, lat, lon, days) {
     const series = await fetchSeriesFor(variableKey, lat, lon, days);
     if (modalCanvasRef.current) {
-      drawMiniChart(modalCanvasRef.current, series, LAYER_DEFS[variableKey].legend.colors);
+      drawMiniChart(modalCanvasRef.current, series, layerDefs[variableKey].legend.colors);
     }
     setSelectedData((prev) => prev ? ({ 
       ...prev, 
@@ -1907,7 +1957,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   function getDataStatusMessage() {
     if (!dataTimestamp) return null;
     
-    const apiName = LAYER_DEFS[activeVar]?.apiName || "API desconocido";
+    const apiName = layerDefs[activeVar]?.apiName || "API desconocido";
     
     if (isDataLive()) {
       return `Datos en tiempo real - ${apiName}`;
@@ -1929,7 +1979,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   function getDataStatusMessageForDisplay() {
     if (!dataTimestamp) return null;
     
-    const apiName = LAYER_DEFS[activeVar]?.apiName || "API desconocido";
+    const apiName = layerDefs[activeVar]?.apiName || "API desconocido";
     
     if (isDataLive()) {
       return `🔴 Datos en tiempo real - ${apiName}`;
@@ -2319,7 +2369,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             mensaje: getDataStatusMessageForDisplay(),
             enTiempoReal: isDataLive(),
             fechaDatos: dataTimestamp ? dataTimestamp.toISOString() : null,
-            fuenteAPI: LAYER_DEFS[activeVar]?.apiName || "Desconocido"
+            fuenteAPI: layerDefs[activeVar]?.apiName || "Desconocido"
           },
           datosClimaticos: {
             valorActual: series[series.length - 1].value,
@@ -2395,7 +2445,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             mensaje: getDataStatusMessageForDisplay(),
             enTiempoReal: isDataLive(),
             fechaDatos: dataTimestamp ? dataTimestamp.toISOString() : null,
-            fuenteAPI: LAYER_DEFS[activeVar]?.apiName || "Desconocido"
+            fuenteAPI: layerDefs[activeVar]?.apiName || "Desconocido"
           },
           datosClimaticos: {
             valorActual: series[series.length - 1].value,
@@ -2455,7 +2505,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         lng: selectedData.lng,
         place: selectedData.place,
         variable: activeVar,
-        unit: LAYER_DEFS[activeVar].legend.unit,
+        unit: layerDefs[activeVar].legend.unit,
         value: series[series.length - 1].value,
         series: series,
         mean: stats.mean,
@@ -2464,7 +2514,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         dataStatusMessage: getDataStatusMessage(),
         isLive: isDataLive(),
         dataTimestamp: dataTimestamp,
-        apiSource: LAYER_DEFS[activeVar]?.apiName,
+        apiSource: layerDefs[activeVar]?.apiName,
         rangoTemporal: `${downloadDateRange} día${downloadDateRange > 1 ? 's' : ''}`,
         // Agregar datos de análisis de cultivos si están disponibles
         cropAnalysis: cropAnalysisData ? {
@@ -2948,7 +2998,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     y += 5;
     doc.setTextColor(0, 0, 0);
 
-    const chartImage = await createTimeSeriesChart(series, LAYER_DEFS[activeVar].legend.colors);
+    const chartImage = await createTimeSeriesChart(series, layerDefs[activeVar].legend.colors);
     if (chartImage) {
       const chartWidth = contentWidth;
       const chartHeight = 65;
@@ -3032,7 +3082,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const pct = x / rect.width;
-    const cfg = LAYER_DEFS[activeVar].legend;
+    const cfg = layerDefs[activeVar].legend;
     const val = cfg.min + pct * (cfg.max - cfg.min);
     setLegendHover(val.toFixed(2) + " " + cfg.unit);
   }
@@ -3048,9 +3098,9 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
    * ========================================
    * EFECTO: INICIALIZACIÓN DEL MAPA
    * ========================================
-   * 
-   * Se ejecuta una sola vez al montar el componente
-   * 
+   *
+   * Se ejecuta cuando las capas están cargadas
+   *
    * Proceso:
    * 1. Crea instancia de Leaflet
    * 2. Agrega controles de zoom personalizados
@@ -3058,11 +3108,19 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
    * 4. Crea panes personalizados para capas
    * 5. Inicializa todas las capas climáticas
    * 6. Agrega capa activa por defecto
-   * 
+   *
    * Cleanup:
    * - Destruye el mapa al desmontar
    */
   useEffect(() => {
+    // No inicializar hasta que las capas estén cargadas
+    if (loadingLayers) {
+      console.log('⏳ Esperando a que se carguen las capas...');
+      return;
+    }
+
+    console.log('🗺️ Inicializando mapa con', Object.keys(layerDefs).length, 'capas');
+
     const map = L.map(mapContainerRef.current, {
       center: [4.6, -74.1],  // Bogotá, Colombia
       zoom: 5.5,
@@ -3186,8 +3244,8 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       const currentVar = activeVarRef.current;
 
       // Mostrar tooltip solo si hay una variable activa
-      if (currentVar && LAYER_DEFS[currentVar]) {
-        const layerDef = LAYER_DEFS[currentVar];
+      if (currentVar && layerDefs[currentVar]) {
+        const layerDef = layerDefs[currentVar];
 
         tooltipDiv.style.display = 'block';
 
@@ -3285,7 +3343,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     // ========================================
     // INICIALIZAR TODAS LAS CAPAS
     // ========================================
-    Object.entries(LAYER_DEFS).forEach(([name, cfg]) => {
+    Object.entries(layerDefs).forEach(([name, cfg]) => {
       try {
         // TIPO: WMTS (NASA GIBS)
         if (cfg.type === "wmts") {
@@ -3714,34 +3772,34 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       mapRef.current = null;
       window.removeEventListener('resize', onResize);
     };
-  }, []);
+  }, [loadingLayers]); // Se ejecuta cuando termina de cargar las capas
 
   /**
    * ========================================
    * EFECTO: CLICK EN EL MAPA
    * ========================================
-   * 
+   *
    * Maneja clics en el mapa para seleccionar puntos
    * No se ejecuta si el modo de dibujo está activo
    */
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || loadingLayers) return; // Esperar a que el mapa y las capas estén listos
 
     const handleMapClick = async (e) => {
       if (drawMode) return; // No procesar clics en modo dibujo
-      
+
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
       await handlePointSelection(lat, lng);
     };
-    
+
     map.on("click", handleMapClick);
 
     return () => {
       map.off("click", handleMapClick);
     };
-  }, [drawMode, downloadDateRange]);
+  }, [drawMode, downloadDateRange, loadingLayers, handlePointSelection]);
 
   /**
    * ========================================
@@ -3793,7 +3851,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           lng: lng.toFixed(6),
           place: selectedPoint.place,
           variable: activeVar,
-          unit: LAYER_DEFS[activeVar].legend.unit,
+          unit: layerDefs[activeVar].legend.unit,
           value: series[series.length - 1].value,
           series,
           mean: stats.mean,
@@ -3885,7 +3943,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         lng: lng.toFixed(6),
         place: place,
         variable: activeVar,
-        unit: LAYER_DEFS[activeVar].legend.unit,
+        unit: layerDefs[activeVar].legend.unit,
         value: series[series.length - 1].value,
         series,
         mean: stats.mean,
@@ -3904,7 +3962,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   }, [downloadDateRange]);
 
   // Obtener configuración de leyenda de la variable activa
-  const legend = LAYER_DEFS[activeVar].legend;
+  const legend = layerDefs[activeVar].legend;
 
   // ============================================================================
   // RENDERIZADO DEL COMPONENTE
@@ -3921,9 +3979,9 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           isVisible={mapBounds !== null && activeVar !== null}
           mapBounds={mapBounds}
           tileData={currentTileData}
-          legendColors={LAYER_DEFS[activeVar]?.legend?.colors || []}
-          legendMin={LAYER_DEFS[activeVar]?.legend?.min || 0}
-          legendMax={LAYER_DEFS[activeVar]?.legend?.max || 100}
+          legendColors={layerDefs[activeVar]?.legend?.colors || []}
+          legendMin={layerDefs[activeVar]?.legend?.min || 0}
+          legendMax={layerDefs[activeVar]?.legend?.max || 100}
         />
       </div>
 
@@ -3973,7 +4031,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           value={activeVar}
           onChange={(e) => setActiveVar(e.target.value)}
         >
-          {Object.keys(LAYER_DEFS).map((k) => <option key={k} value={k}>{k}</option>)}
+          {Object.keys(layerDefs).map((k) => <option key={k} value={k}>{k}</option>)}
         </select>
 
         {/* Selector de cultivo */}

@@ -4,33 +4,20 @@ import API from "../api/api";
 import { handleAPIErrorWithAuth, handleAPIError } from "../utils/errorHandler";
 import "../styles/UserPanel.css";
 import UserMapDashboard from "./UserMapDashboard";
+import AdminUsers from "../components/AdminUsers";
+import AdminVariables from "../components/AdminVariables";
+import AdminCrops from "../components/AdminCrops";
 
 export default function UserPanel() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [adminTab, setAdminTab] = useState("usuarios"); // usuarios, variables, cultivos
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [showEdit, setShowEdit] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [showAccountConfig, setShowAccountConfig] = useState(false);
   const [isEditingAccount, setIsEditingAccount] = useState(false);
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    role: "productor",
-    password: "",
-  });
-  const [adminPasswordStrength, setAdminPasswordStrength] = useState({
-    score: 0,
-    label: "",
-    color: "",
-    feedback: []
-  });
   const [accountForm, setAccountForm] = useState({
     first_name: "",
     last_name: "",
@@ -81,13 +68,6 @@ useEffect(() => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data.user);
-
-        if (res.data.user.role === "admin") {
-          const usersRes = await API.get("/users/", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUsers(usersRes.data.users || usersRes.data);
-        }
       } catch (err) {
         const errorMessage = handleAPIErrorWithAuth(err, navigate, "cargar perfil de usuario");
         showNotification("error", "Error de autenticación", errorMessage);
@@ -102,17 +82,6 @@ useEffect(() => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-
-    // Si está cambiando la contraseña del usuario, evaluar fortaleza
-    if (name === "password") {
-      const strength = evaluatePasswordStrength(value);
-      setAdminPasswordStrength(strength);
-    }
   };
 
   // Función para calcular la similitud entre dos strings (algoritmo de Levenshtein simplificado)
@@ -406,93 +375,6 @@ useEffect(() => {
     }
   };
 
-  const openEdit = (u) => {
-    setEditingUser(u);
-    setForm({
-      first_name: u.first_name || "",
-      last_name: u.last_name || "",
-      email: u.email || "",
-      phone: u.phone || "",
-      role: u.role || "productor",
-      password: "",
-    });
-    setAdminPasswordStrength({
-      score: 0,
-      label: "",
-      color: "",
-      feedback: []
-    });
-    setShowEdit(true);
-    setNotification(null);
-  };
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    if (!editingUser) return;
-
-    // Validar fortaleza de contraseña si se está cambiando
-    if (form.password && adminPasswordStrength.score < 3) {
-      showNotification(
-        "error",
-        "Contraseña débil",
-        "La contraseña debe ser al menos de nivel 'Media'. Por favor, sigue las recomendaciones."
-      );
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      const payload = { ...form };
-      if (!form.password) delete payload.password;
-
-      const res = await API.put(`/users/${editingUser._id}/`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers((prev) =>
-        prev.map((u) => (u._id === editingUser._id ? res.data.user : u))
-      );
-      setShowEdit(false);
-      setEditingUser(null);
-      showNotification(
-        "success",
-        "¡Actualizado con éxito!",
-        `Los datos de ${form.first_name} ${form.last_name} han sido actualizados correctamente.`
-      );
-    } catch (err) {
-      const errorMessage = handleAPIError(err, "actualizar el usuario");
-      showNotification(
-        "error",
-        "Error al actualizar",
-        errorMessage
-      );
-    }
-  };
-
-  const handleDelete = async (_id) => {
-    const userToDelete = users.find((u) => u._id === _id);
-    if (!window.confirm(`¿Seguro que deseas eliminar a ${userToDelete.first_name} ${userToDelete.last_name}?`)) return;
-    
-    try {
-      const token = localStorage.getItem("token");
-      await API.delete(`/users/delete/${_id}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers((prev) => prev.filter((u) => u._id !== _id));
-      showNotification(
-        "success",
-        "¡Usuario eliminado!",
-        `${userToDelete.first_name} ${userToDelete.last_name} ha sido eliminado correctamente.`
-      );
-    } catch (err) {
-      console.error(err);
-      showNotification(
-        "error",
-        "Error al eliminar",
-        "No se pudo eliminar el usuario. Intenta nuevamente."
-      );
-    }
-  };
-
   // Función para obtener el nombre completo del usuario
   const getUserFullName = () => {
     if (!user) return '';
@@ -614,164 +496,47 @@ useEffect(() => {
         {/* 🌍 Lado derecho: mapa o administración */}
         <div className="right-panel">
           {user?.role !== "admin" ? (
-            <UserMapDashboard currentUser={user} ref={mapRef} />
+            <UserMapDashboard key={user?.email || 'default'} currentUser={user} ref={mapRef} />
           ) : (
             <div className="admin-panel-content">
-              <h3>Administración de usuarios</h3>
-              <div className="table-container">
-                <table className="users-table">
-                  <thead>
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Email</th>
-                      <th>Rol</th>
-                      <th>Teléfono</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.length === 0 && (
-                      <tr>
-                        <td colSpan="5" className="center">
-                          No hay usuarios
-                        </td>
-                      </tr>
-                    )}
-                    {users.map((u) => (
-                      <tr key={u._id}>
-                        <td>
-                          {u.first_name} {u.last_name}
-                        </td>
-                        <td>{u.email}</td>
-                        <td>{u.role}</td>
-                        <td>{u.phone}</td>
-                        <td>
-                          <button
-                            className="btn btn-blue btn-with-icon"
-                            onClick={() => openEdit(u)}
-                          >
-                            <img src="/iconos/edit.png" alt="Editar" className="btn-icon" />
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-red btn-with-icon"
-                            onClick={() => handleDelete(u._id)}
-                          >
-                            <img src="/iconos/trash.png" alt="Eliminar" className="btn-icon" />
-                            Eliminar
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Pestañas de administración */}
+              <div className="admin-tabs">
+                <button
+                  className={`admin-tab ${adminTab === "usuarios" ? "active" : ""}`}
+                  onClick={() => setAdminTab("usuarios")}
+                >
+                  👥 Usuarios
+                </button>
+                <button
+                  className={`admin-tab ${adminTab === "variables" ? "active" : ""}`}
+                  onClick={() => setAdminTab("variables")}
+                >
+                  📊 Variables
+                </button>
+                <button
+                  className={`admin-tab ${adminTab === "cultivos" ? "active" : ""}`}
+                  onClick={() => setAdminTab("cultivos")}
+                >
+                  🌱 Cultivos
+                </button>
               </div>
+
+              {/* Contenido según pestaña activa */}
+              {adminTab === "usuarios" && (
+                <AdminUsers showNotification={showNotification} />
+              )}
+
+              {adminTab === "variables" && (
+                <AdminVariables showNotification={showNotification} />
+              )}
+
+              {adminTab === "cultivos" && (
+                <AdminCrops showNotification={showNotification} />
+              )}
             </div>
           )}
         </div>
       </div>
-
-      {/* ✏️ Modal para editar usuario */}
-      {showEdit && editingUser && (
-        <div className="modal">
-          <div className="modal-content">
-            <h4>✏️ Editar usuario: {editingUser.email}</h4>
-            <form onSubmit={handleUpdate} className="edit-form">
-              <div className="form-row">
-                <input
-                  name="first_name"
-                  value={form.first_name}
-                  onChange={handleChange}
-                  placeholder="Nombre"
-                  required
-                />
-                <input
-                  name="last_name"
-                  value={form.last_name}
-                  onChange={handleChange}
-                  placeholder="Apellido"
-                  required
-                />
-              </div>
-              <input
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Email"
-                type="email"
-                required
-              />
-              <input
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="Teléfono"
-              />
-              <select name="role" value={form.role} onChange={handleChange}>
-                <option value="productor">Productor</option>
-                <option value="vendedor">Vendedor</option>
-                <option value="inversionista">Inversionista</option>
-                <option value="admin">Administrador</option>
-              </select>
-
-              <div className="password-input-wrapper">
-                <input
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Nueva contraseña (dejar vacío para no cambiar)"
-                  type="password"
-                />
-
-                {form.password && (
-                  <div className="password-strength-indicator">
-                    <div className="strength-bar-container">
-                      <div
-                        className={`strength-bar ${adminPasswordStrength.className}`}
-                        style={{
-                          width: `${(adminPasswordStrength.score / 5) * 100}%`
-                        }}
-                      />
-                    </div>
-                    <div className={`strength-label ${adminPasswordStrength.className}`}>
-                      {adminPasswordStrength.label}
-                    </div>
-                  </div>
-                )}
-
-                {form.password && adminPasswordStrength.feedback.length > 0 && (
-                  <div className="password-feedback">
-                    <div className="feedback-title">Requisitos pendientes:</div>
-                    <ul className="feedback-list">
-                      {adminPasswordStrength.feedback.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {form.password && adminPasswordStrength.feedback.length === 0 && (
-                  <div className="password-feedback success">
-                    ✓ Contraseña cumple con todos los requisitos
-                  </div>
-                )}
-              </div>
-              <div className="modal-actions">
-                <button type="submit" className="btn btn-blue">
-                  💾 Actualizar
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-gray"
-                  onClick={() => setShowEdit(false)}
-                >
-                  ✖ Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Configuración de cuenta del usuario */}
       {showAccountConfig && user && (

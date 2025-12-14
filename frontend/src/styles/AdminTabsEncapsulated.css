@@ -1,0 +1,595 @@
+/* ============================================
+   ESTILOS ENCAPSULADOS PARA PESTAÑAS DE ADMIN
+   Solo afectan a componentes dentro de .admin-tab-content
+   ============================================ */
+
+/* Botones de pestañas principales */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.admin-tab {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-tab:hover {
+  background: #e3e8ed;
+  color: #333;
+}
+
+.admin-tab.active {
+  background: white;
+  color: #3B5998;
+  box-shadow: 0 -2px 8px rgba(59, 89, 152, 0.1);
+}
+
+.admin-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3B5998, #2E86DE);
+}
+
+/* Contenedor principal de cada pestaña */
+.admin-tab-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  overflow: hidden;
+}
+
+/* Header de la pestaña */
+.admin-tab-content .admin-header,
+div.admin-tab-content > .admin-header {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 20px 24px !important;
+  margin-bottom: 0 !important;
+  border-bottom: 2px solid #f0f0f0 !important;
+  padding-bottom: 20px !important;
+  flex-shrink: 0 !important;
+  gap: 20px !important;
+  flex-wrap: nowrap !important;
+  background: white !important;
+}
+
+/* Título del header */
+.admin-tab-content .admin-header h3,
+div.admin-tab-content > .admin-header > h3 {
+  margin: 0 !important;
+  margin-bottom: 0 !important;
+  color: #1f2937 !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  flex-shrink: 1 !important;
+  white-space: nowrap !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Contenedor de acciones (búsqueda + botón) */
+.admin-tab-content .admin-header-actions,
+div.admin-tab-content .admin-header > .admin-header-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-end !important;
+}
+
+/* Contenedor del input de búsqueda */
+.admin-tab-content .admin-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Input de búsqueda */
+.admin-tab-content .admin-search-container input.admin-search-input,
+.admin-tab-content input.admin-search-input {
+  padding: 10px 16px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  width: 320px !important;
+  min-width: 320px !important;
+  max-width: 320px !important;
+  background: white !important;
+  color: #374151 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  font-family: inherit !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-tab-content .admin-search-container input.admin-search-input:focus,
+.admin-tab-content input.admin-search-input:focus {
+  background: white !important;
+  border-color: #3B5998 !important;
+  box-shadow: 0 0 0 2px rgba(59, 89, 152, 0.2) !important;
+}
+
+.admin-tab-content .admin-search-container input.admin-search-input::placeholder,
+.admin-tab-content input.admin-search-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Contenedor de tabla */
+.admin-tab-content .admin-table-container {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 24px;
+}
+
+/* Tabla */
+.admin-tab-content table.admin-table,
+.admin-tab-content .admin-table,
+.admin-tab-content table,
+.admin-tab-content .admin-table-container table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: white !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-spacing: 0 !important;
+}
+
+/* Header de tabla */
+.admin-tab-content table.admin-table thead,
+.admin-tab-content .admin-table thead {
+  background: linear-gradient(135deg, #3B5998, #2E86DE) !important;
+}
+
+/* Celdas del header de tabla */
+.admin-tab-content table.admin-table thead th,
+.admin-tab-content .admin-table thead th,
+.admin-tab-content table thead th,
+.admin-tab-content .admin-table-container table thead th {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 14px 12px !important;
+  text-align: left !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Filas del body */
+.admin-tab-content table.admin-table tbody tr,
+.admin-tab-content .admin-table tbody tr {
+  border-bottom: 1px solid #e5e7eb !important;
+  transition: background 0.2s ease !important;
+}
+
+.admin-tab-content table.admin-table tbody tr:hover,
+.admin-tab-content .admin-table tbody tr:hover {
+  background: #f9fafb !important;
+}
+
+.admin-tab-content table.admin-table tbody tr:last-child,
+.admin-tab-content .admin-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+/* Celdas del body */
+.admin-tab-content table.admin-table tbody td,
+.admin-tab-content .admin-table tbody td,
+.admin-tab-content table tbody td,
+.admin-tab-content .admin-table-container table tbody td {
+  padding: 12px !important;
+  font-size: 14px !important;
+  color: #1f2937 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Celda centrada (cuando no hay datos) */
+.admin-tab-content .admin-table tbody td.center {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Código dentro de celdas */
+.admin-tab-content .admin-table tbody td code {
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #3B5998;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+/* Badge de categoría */
+.admin-tab-content .category-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+/* Botón toggle para estado activo/inactivo */
+.admin-tab-content .toggle-btn {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-content .toggle-btn.active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.admin-tab-content .toggle-btn.inactive {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.admin-tab-content .toggle-btn:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+/* Celda de acciones */
+.admin-tab-content .actions-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Loading state */
+.admin-tab-content .admin-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+
+.admin-tab-content .btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-tab-content .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.5s ease;
+}
+
+.admin-tab-content .btn:hover::before {
+  left: 100%;
+}
+
+/* Botón azul */
+.admin-tab-content .btn-blue {
+  background: linear-gradient(135deg, #3B5998, #2E86DE);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 89, 152, 0.3);
+}
+
+.admin-tab-content .btn-blue:hover {
+  background: linear-gradient(135deg, #2E86DE, #1e40af);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(59, 89, 152, 0.5);
+}
+
+.admin-tab-content .btn-blue:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 89, 152, 0.4);
+}
+
+/* Botón rojo */
+.admin-tab-content .btn-red {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.admin-tab-content .btn-red:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5);
+}
+
+.admin-tab-content .btn-red:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+}
+
+/* Botón verde */
+.admin-tab-content .btn-green {
+  background: linear-gradient(135deg, #059669, #047857);
+  color: white;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.admin-tab-content .btn-green:hover {
+  background: linear-gradient(135deg, #047857, #065f46);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.5);
+}
+
+.admin-tab-content .btn-green:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+}
+
+/* Botón con icono */
+.admin-tab-content .btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+}
+
+.admin-tab-content .btn-icon-emoji {
+  font-size: 1.3em;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Botón pequeño */
+.admin-tab-content .btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+
+.admin-tab-content .btn-sm .btn-icon-emoji {
+  font-size: 1.1em;
+}
+
+/* Botón secundario */
+.admin-tab-content .btn-secondary {
+  background: #6b7280;
+  color: white;
+  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+
+.admin-tab-content .btn-secondary:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
+}
+
+/* ============================================
+   MODAL DE ADMINISTRACIÓN
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content-admin {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-content-admin.modal-large {
+  max-width: 800px;
+}
+
+.modal-header-admin {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+}
+
+.modal-header-admin h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #fee;
+  color: #e63946;
+}
+
+/* ============================================
+   FORMULARIOS DE ADMINISTRACIÓN
+   ============================================ */
+
+.admin-form {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.form-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 16px;
+}
+
+.form-section h4 {
+  margin: 0 0 16px 0;
+  color: #3B5998;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3B5998;
+  box-shadow: 0 0 0 3px rgba(59, 89, 152, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.checkbox-group {
+  margin: 16px 0;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3B5998;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 2px solid #f0f0f0;
+}
+
+.modal-actions .btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.modal-actions .btn-secondary:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+}

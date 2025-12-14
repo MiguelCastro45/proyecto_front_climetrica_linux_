@@ -90,8 +90,7 @@ export default function Login() {
       setSuccess("¡Inicio de sesión exitoso! Redirigiendo...");
 
       setTimeout(() => {
-        if (res.data.role === "admin") navigate("/admin");
-        else navigate("/user");
+        navigate("/user");
       }, 1000);
     } catch (err) {
       setIsLoading(false);

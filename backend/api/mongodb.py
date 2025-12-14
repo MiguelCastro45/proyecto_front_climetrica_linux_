@@ -72,6 +72,70 @@ config_col = db['system_config']
 # }
 climate_data_col = db["climate_data"]
 
+# Colección de variables del dashboard
+# Esquema: {
+#     _id: ObjectId,
+#     nombre: str (nombre de la variable, ej: "Temperatura terrestre"),
+#     clave: str (clave única, ej: "temperatura_terrestre"),
+#     descripcion: str,
+#     activa: bool (si está visible en el dashboard),
+#     categoria: str (ej: "meteorologica", "oceanica", "agricola"),
+#     unidad: str (ej: "°C", "mm", "%"),
+#     icono: str (opcional, nombre del icono),
+#     orden: int (orden de visualización),
+#     configuracion_api: {
+#         tipo: str (ej: "openweathermap", "wmts", "wms", "open-meteo"),
+#         layer: str (identificador de la capa),
+#         formato: str (opcional, "png", "jpg"),
+#         tile_matrix_set: str (opcional, para WMTS),
+#         parametro_open_meteo: str (opcional, parámetro en Open-Meteo API),
+#         max_native_zoom: int (opcional),
+#         proveedores_alternativos: list (opcional, proveedores de respaldo)
+#     },
+#     configuracion_animacion: {
+#         habilitada: bool,
+#         opacidad: float (0-1),
+#         velocidad: str ("lenta", "normal", "rapida"),
+#         tipo_animacion: str ("particulas", "ondas", "color", "ninguna")
+#     },
+#     leyenda: {
+#         min: float,
+#         max: float,
+#         colores: list (lista de colores hex)
+#     },
+#     created_at: datetime,
+#     updated_at: datetime
+# }
+dashboard_variables_col = db["dashboard_variables"]
+
+# Colección de cultivos
+# Esquema: {
+#     _id: ObjectId,
+#     nombre: str (nombre del cultivo, ej: "Café"),
+#     nombre_cientifico: str (opcional),
+#     descripcion: str,
+#     requerimientos: {
+#         temperatura_min: float,
+#         temperatura_max: float,
+#         temperatura_optima: float,
+#         precipitacion_min: float,
+#         precipitacion_max: float,
+#         altitud_min: float,
+#         altitud_max: float,
+#         humedad_min: float (opcional),
+#         humedad_max: float (opcional)
+#     },
+#     color: str (código hexadecimal, ej: "#8B4513"),
+#     icono: str (emoji o identificador de ícono),
+#     ciclo_siembra: str (ej: "Mar-Abr, Sep-Oct"),
+#     ciclo_cosecha: str (ej: "Oct-Ene, Abr-Jun"),
+#     imagen_url: str (opcional),
+#     activo: bool,
+#     created_at: datetime,
+#     updated_at: datetime
+# }
+crops_col = db["crops"]
+
 # ============================
 # GRIDFS (Almacenamiento de archivos grandes)
 # ============================

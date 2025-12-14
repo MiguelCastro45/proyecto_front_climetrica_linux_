@@ -1,0 +1,95 @@
+/* RESETEO COMPLETO DE ESTILOS PARA ADMIN PANEL */
+/* Este archivo se carga DESPUÉS de AdminTabsEncapsulated.css */
+/* Tiene la MÁXIMA prioridad para sobrescribir TODO */
+
+/* ==================== RESET INPUTS ==================== */
+.admin-tab-content input,
+.admin-tab-content input[type="text"],
+.admin-tab-content input[type="email"],
+.admin-tab-content input[type="password"],
+.admin-tab-content input[type="search"],
+.admin-tab-content .admin-search-input,
+.admin-search-container input,
+div.admin-tab-content input {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: 0 !important;
+  outline-width: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+/* ==================== RESET TABLES ==================== */
+.admin-tab-content table,
+.admin-tab-content .admin-table,
+div.admin-tab-content table {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-spacing: 0 !important;
+  border-collapse: collapse !important;
+}
+
+/* ==================== RESET TH ==================== */
+.admin-tab-content th,
+.admin-tab-content thead th,
+.admin-tab-content table th,
+.admin-tab-content .admin-table th,
+div.admin-tab-content th,
+div.admin-tab-content thead th,
+div.admin-tab-content table th {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+/* ==================== RESET TD ==================== */
+.admin-tab-content td,
+.admin-tab-content tbody td,
+.admin-tab-content table td,
+.admin-tab-content .admin-table td,
+div.admin-tab-content td,
+div.admin-tab-content tbody td,
+div.admin-tab-content table td {
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+/* ==================== RESET TR ==================== */
+.admin-tab-content tr,
+.admin-tab-content tbody tr,
+.admin-tab-content thead tr,
+div.admin-tab-content tr {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+}
+
+/* ==================== RESET BUTTONS ==================== */
+.admin-tab-content button,
+.admin-tab-content .btn,
+div.admin-tab-content button {
+  border: none !important;
+  border-width: 0 !important;
+  outline: none !important;
+}

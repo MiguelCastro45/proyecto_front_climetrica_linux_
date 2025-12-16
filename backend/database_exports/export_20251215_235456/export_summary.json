@@ -1,0 +1,29 @@
+{
+  "timestamp": "20251215_235456",
+  "date": "2025-12-15T23:54:56.827408",
+  "database": "climetricadb",
+  "total_collections": 4,
+  "total_documents": 27,
+  "collections": [
+    {
+      "collection": "users",
+      "documents": 3,
+      "file": "users.json"
+    },
+    {
+      "collection": "crops",
+      "documents": 9,
+      "file": "crops.json"
+    },
+    {
+      "collection": "climate_data",
+      "documents": 10,
+      "file": "climate_data.json"
+    },
+    {
+      "collection": "dashboard_variables",
+      "documents": 5,
+      "file": "dashboard_variables.json"
+    }
+  ]
+}

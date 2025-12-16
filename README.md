@@ -98,10 +98,36 @@ Ver [ESTRUCTURA_PROYECTO.md](ESTRUCTURA_PROYECTO.md) para más detalles.
 
 ## 📚 Documentación
 
-- [Estructura del Proyecto](ESTRUCTURA_PROYECTO.md)
-- [Manejo de Errores](frontend/MANEJO_ERRORES.md)
-- [Configuración de Correo](backend/CONFIGURACION_CORREO.md)
-- [Sistema de Encriptación](SEGURIDAD_ENCRIPTACION.md)
+### Documentación Principal
+
+- **[Guía de Instalación](GUIA_INSTALACION.md)** - Instalación paso a paso del sistema completo
+- **[Arquitectura del Sistema](ARQUITECTURA_SISTEMA.md)** - Diseño y arquitectura del proyecto
+- **[Estructura del Proyecto](ESTRUCTURA_PROYECTO.md)** - Organización de archivos y directorios
+
+### Documentación Técnica
+
+- **[Backend - API REST](DOCUMENTACION_BACKEND.md)** - Endpoints, servicios y base de datos
+- **[Frontend - React](DOCUMENTACION_FRONTEND.md)** - Componentes, páginas y servicios
+- **[Scripts de Utilidad](DOCUMENTACION_SCRIPTS.md)** - Scripts de mantenimiento y migración
+- **[Documentación del Código](DOCUMENTACION_CODIGO.md)** - Explicación detallada del código
+
+### Características Específicas
+
+- **[Sistema de Animaciones](SISTEMA_ANIMACIONES.md)** - Capas animadas y series temporales
+- **[Integración IA](INTEGRACION_IA_CULTIVOS.md)** - Análisis de cultivos con IA (Groq)
+- **[Cómo Agregar Variables](COMO_AGREGAR_VARIABLES.md)** - Guía para agregar nuevas variables climáticas
+
+### Configuración y Seguridad
+
+- **[Configuración de Correo](backend/CONFIGURACION_CORREO.md)** - Servicio de email
+- **[Sistema de Encriptación](SEGURIDAD_ENCRIPTACION.md)** - Seguridad AES y JWT
+- **[Manejo de Errores](frontend/MANEJO_ERRORES.md)** - Sistema de manejo de errores
+
+### Base de Datos
+
+- **[Exportación de Datos](backend/database_exports/)** - Backups de la base de datos
+  - Última exportación contiene 4 colecciones con 27 documentos
+  - Incluye: usuarios, cultivos, variables y datos climáticos
 
 ## 🔒 Seguridad
 

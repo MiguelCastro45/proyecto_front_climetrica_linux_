@@ -32,7 +32,7 @@ const LAYER_DEFS = {
     type: "openweathermap",
     layer: "temp_new",
     opacity: 0.6,
-    apiKey: "d2f1e6e2af677293a7fc4e832214a09c",
+    apiKey: process.env.REACT_APP_OWM_KEY || "",
     maxNativeZoom: 18,
     legend: {
       colors: ["#1e1b4b", "#312e81", "#4338ca", "#6366f1", "#818cf8", "#a5b4fc", "#fef08a", "#fde047", "#facc15", "#fb923c", "#f97316", "#dc2626", "#991b1b"]
@@ -64,7 +64,7 @@ const LAYER_DEFS = {
     type: "openweathermap",
     layer: "wind_new",
     opacity: 0.7,
-    apiKey: "d2f1e6e2af677293a7fc4e832214a09c",
+    apiKey: process.env.REACT_APP_OWM_KEY || "",
     maxNativeZoom: 18,
     legend: {
       colors: ["#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534", "#14532d"]

@@ -12,11 +12,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
 from pathlib import Path
 
 # Cargar archivo .env
 load_dotenv()
+
+# En Windows la consola usa cp1252 y los print() de depuración con emojis
+# (📅 🔍 ✅ ❌ ...) lanzan UnicodeEncodeError y rompen la petición HTTP.
+# Forzamos UTF-8 en la salida estándar para evitarlo.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 # BASE_DIR ya está definido en la mayoría de proyectos Django:
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,12 +41,21 @@ JWT_EXP_DAYS = int(os.getenv("JWT_EXP_DAYS", 7))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p_9b2o28vwsqxvm(8t+t-3gblkhgn1r!%w5jcg=a68v5v93$_1'
+# Se lee de la variable de entorno DJANGO_SECRET_KEY (backend/.env).
+# El valor por defecto solo sirve para desarrollo local.
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-p_9b2o28vwsqxvm(8t+t-3gblkhgn1r!%w5jcg=a68v5v93$_1",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG=True por defecto (desarrollo). En producción poner DJANGO_DEBUG=False en .env
+DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = []
+# Hosts permitidos, separados por coma en DJANGO_ALLOWED_HOSTS (ej: "midominio.com,www.midominio.com")
+ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
+]
 
 
 # Application definition
@@ -134,4 +153,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT = BASE_DIR / "uploads"
 MEDIA_URL = "/uploads/"
 
-CORS_ALLOW_ALL_ORIGINS = True  # (solo para desarrollo)
+# CORS
+# En desarrollo se permite cualquier origen. En producción, poner
+# DJANGO_CORS_ALLOW_ALL=False y listar los orígenes del frontend en
+# DJANGO_CORS_ORIGINS (ej: "https://midominio.com,https://www.midominio.com").
+CORS_ALLOW_ALL_ORIGINS = os.getenv("DJANGO_CORS_ALLOW_ALL", "True").lower() in ("true", "1", "yes")
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv("DJANGO_CORS_ORIGINS", "").split(",") if o.strip()
+]

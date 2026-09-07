@@ -13,6 +13,13 @@ media/
 backend/venv/
 backend/env/
 backend/.env
+backend/mongodb_data/
+backend/database_exports/
+backend/uploads/
+
+# Exportes / respaldos de base de datos (pueden contener datos personales)
+database_exports/
+*.dump
 
 # Node / React
 node_modules/

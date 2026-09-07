@@ -14,13 +14,23 @@ Autor: Sistema Climétrica
 Fecha: 2025
 """
 
+import os
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
-# Clave secreta para JWT (usa una variable de entorno en producción)
-# IMPORTANTE: Esta clave debe ser la misma que JWT_SECRET en .env
-SECRET_KEY = "CLIMETRICA_SECRET_KEY_2025"
+# Cargar variables de entorno (backend/.env)
+load_dotenv()
+
+# Clave secreta para firmar/verificar los JWT.
+# DEBE definirse en backend/.env como JWT_SECRET (valor aleatorio y privado).
+# El valor por defecto solo evita que el proyecto se rompa en un entorno de
+# desarrollo sin .env; NUNCA debe usarse en producción.
+SECRET_KEY = os.getenv("JWT_SECRET") or "CLIMETRICA_SECRET_KEY_2025"
+
+# Algoritmo de firma del JWT (configurable vía .env)
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 
 def hash_password(password: str) -> str:
@@ -109,7 +119,7 @@ def create_jwt(payload: dict, exp_minutes: int = 60):
     """
     payload_copy = payload.copy()
     payload_copy["exp"] = datetime.utcnow() + timedelta(minutes=exp_minutes)
-    return jwt.encode(payload_copy, SECRET_KEY, algorithm="HS256")
+    return jwt.encode(payload_copy, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def decode_jwt(token: str):
@@ -143,7 +153,7 @@ def decode_jwt(token: str):
         - Tokens malformados
     """
     try:
-        return jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
     except jwt.ExpiredSignatureError:
         # Token expirado
         return None

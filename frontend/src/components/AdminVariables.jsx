@@ -1,3 +1,18 @@
+/**
+ * AdminVariables.jsx — CRUD de variables del dashboard (solo admin).
+ *
+ * Se usa desde UserPanel y AdminDashboard. Endpoints (api/api.js, con JWT):
+ *   GET    /api/admin/variables/
+ *   POST   /api/admin/variables/create/
+ *   PUT    /api/admin/variables/<id>/
+ *   DELETE /api/admin/variables/<id>/delete/
+ *   PATCH  /api/admin/variables/<id>/toggle/
+ *
+ * Cada variable guarda su configuración de API/capa (tipo openweathermap |
+ * wmts | ...), animación (config/animationTemplates.js) y leyenda
+ * (min/max/colores/unidad). Es lo que UserMapDashboard convierte en
+ * `layerDefs` para pintar las capas del mapa.
+ */
 import React, { useState, useEffect, useRef } from "react";
 import API from "../api/api";
 import "../styles/AdminTabsEncapsulated.css?v=11";

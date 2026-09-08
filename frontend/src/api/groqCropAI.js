@@ -1,4 +1,10 @@
 /**
+ * ⚠️ ESTADO: NO CONECTADO (2026-09). Este módulo no lo importa ningún
+ * componente todavía. El análisis de aptitud de cultivos que se usa hoy es
+ * local/heurístico (rangos de temp/precip/altitud), calculado dentro de
+ * UserMapDashboard.jsx. Se deja como base para cuando se active la IA:
+ * requiere definir REACT_APP_GROQ_API_KEY en frontend/.env.
+ *
  * Servicio de Recomendaciones de Cultivos usando Groq AI
  *
  * Groq ofrece acceso GRATUITO a modelos de IA de última generación

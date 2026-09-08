@@ -1,3 +1,14 @@
+/**
+ * Login.jsx — Pantalla de inicio de sesión (ruta "/").
+ *
+ * Flujo:
+ *  1. Cifra email y contraseña con AES (CryptoJS) usando REACT_APP_ENCRYPTION_KEY.
+ *  2. POST /login/ (ver api/api.js, baseURL http://localhost:8000).
+ *  3. Guarda `token` y `role` en localStorage y redirige a "/user".
+ *
+ * Incluye autocompletado de dominios de correo comunes.
+ * La clave AES debe coincidir con ENCRYPTION_KEY del backend (backend/.env).
+ */
 import React, { useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";

@@ -1,3 +1,12 @@
+/**
+ * AdminUsers.jsx — CRUD de usuarios (solo admin).
+ *
+ * Se usa desde UserPanel y AdminDashboard. Endpoints (api/api.js, con JWT):
+ *   GET    /users/                  listar
+ *   PUT    /users/<id>/             editar (incluye role, status, password)
+ *   DELETE /users/delete/<id>/      eliminar
+ * Prop `showNotification(type, title, message)` la inyecta el contenedor.
+ */
 import React, { useState, useEffect } from "react";
 import API from "../api/api";
 import "../styles/AdminTabsEncapsulated.css?v=11";

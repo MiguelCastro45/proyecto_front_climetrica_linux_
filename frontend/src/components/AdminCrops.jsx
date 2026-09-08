@@ -1,3 +1,15 @@
+/**
+ * AdminCrops.jsx — CRUD de cultivos (solo admin).
+ *
+ * Se usa desde UserPanel y AdminDashboard. Endpoints (api/api.js, con JWT):
+ *   GET    /api/admin/crops/
+ *   POST   /api/admin/crops/create/
+ *   PUT    /api/admin/crops/<id>/
+ *   DELETE /api/admin/crops/<id>/delete/
+ *   PATCH  /api/admin/crops/<id>/toggle/   (activar/desactivar)
+ * Cada cultivo define requerimientos de temperatura/precipitación/altitud
+ * que UserMapDashboard usa para el análisis de aptitud.
+ */
 import React, { useState, useEffect } from "react";
 import API from "../api/api";
 import "../styles/AdminTabsEncapsulated.css?v=11";

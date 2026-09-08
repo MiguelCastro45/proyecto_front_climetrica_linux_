@@ -1,3 +1,10 @@
+/**
+ * AdminDashboard.jsx — Panel de administración "suelto" (ruta "/admin").
+ *
+ * Monta las mismas tres pestañas que UserPanel usa para el rol admin:
+ * <AdminUsers>, <AdminVariables>, <AdminCrops>. Hoy ninguna navegación
+ * apunta aquí (el admin entra por "/user"); se mantiene como acceso directo.
+ */
 import React, { useState } from "react";
 import AdminUsers from "../components/AdminUsers";
 import AdminVariables from "../components/AdminVariables";

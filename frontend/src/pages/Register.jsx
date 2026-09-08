@@ -1,3 +1,12 @@
+/**
+ * Register.jsx — Alta de nuevo usuario (ruta "/register").
+ *
+ * Envía POST /register/ con { first_name, last_name, email, phone,
+ * identification, password, role }. El backend hashea la contraseña con
+ * bcrypt. Valida en cliente: formato de email, fuerza de contraseña
+ * (mayús/minús/número/especial), coincidencia de confirmación y unicidad
+ * (el backend rechaza email/identificación duplicados).
+ */
 import React, { useState } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";

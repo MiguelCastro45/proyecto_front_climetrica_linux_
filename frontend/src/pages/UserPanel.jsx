@@ -1,3 +1,14 @@
+/**
+ * UserPanel.jsx — Contenedor principal tras el login (ruta "/user").
+ *
+ * Al montar hace GET /profile/ (requiere JWT en localStorage; si no hay,
+ * redirige a "/") y, según `user.role`, renderiza:
+ *   - role != "admin"  ->  <UserMapDashboard>  (mapa climático)
+ *   - role == "admin"  ->  pestañas <AdminUsers> / <AdminVariables> / <AdminCrops>
+ *
+ * También gestiona el panel lateral de "Mi cuenta": edición de perfil y
+ * cambio de contraseña (PUT /profile/update/) con medidor de fuerza.
+ */
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";

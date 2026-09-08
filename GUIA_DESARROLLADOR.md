@@ -3,6 +3,9 @@
 > Documento de arranque para quien se incorpora al proyecto (especialmente al **backend**).
 > Complementa a `ARQUITECTURA_SISTEMA.md`, `DOCUMENTACION_BACKEND.md` y `DOCUMENTACION_FRONTEND.md`.
 > Última revisión: 2026-09-07.
+>
+> **Versión visual (página web) de esta guía:** https://claude.ai/code/artifact/cf70f4cc-c418-4df6-80ad-fb91a0db067c
+> (arquitectura, jerarquía del frontend, endpoints, API keys, base de datos y auditoría de código muerto en formato navegable).
 
 ---
 
@@ -195,13 +198,11 @@ backend/
 │   ├── views.py         # auth, perfil, usuarios (admin), registros climáticos, reset password
 │   ├── admin_views.py   # CRUD de variables del dashboard y de cultivos (solo admin)
 │   ├── public_views.py  # variables y cultivos activos (sin login) — los consume el frontend
-│   ├── admin_views.py
 │   ├── decorators.py    # @jwt_required, @admin_required
 │   ├── auth_utils.py    # hash_password/check_password (bcrypt), create_jwt/decode_jwt (JWT)
 │   ├── crypto_utils.py  # decrypt_data: AES compatible con CryptoJS del frontend
 │   ├── mongodb.py       # conexión PyMongo + handles de colecciones + esquemas documentados
 │   ├── email_service.py # envío de correo (reset password) — ver backend/CONFIGURACION_CORREO.md
-│   ├── dataset_utils.py
 │   ├── models.py        # VACÍO (no se usa el ORM)
 │   └── migrations/      # vacío (no se usa el ORM)
 │
@@ -347,8 +348,8 @@ independiente.
 |---------|--------|----------|
 | `api.js` | **en uso** | Instancia axios, `baseURL: http://localhost:8000`, interceptor que añade `Authorization: Bearer` desde `localStorage`. Lo usan Login, Register, UserPanel, AdminUsers/Variables/Crops, etc. |
 | `Save_climate_data_helper.js` | **en uso** (lo importa `UserMapDashboard`) | `saveClimateData()`, `getClimateDataByUser()`, `deleteClimateData()` contra `/climate-data/…`. Arma el documento grande que se guarda en Mongo. |
-| `climateAPI.js` | **muerto** | No lo importa nadie. Apunta a rutas `/api/climate/*` y `/api/download/*` que ya no existen (eran del backend Flask viejo). |
-| `groqCropAI.js` | **muerto / aspiracional** | No lo importa nadie. El análisis de cultivos actual es **local/heurístico** (rangos de temp/precip/altitud), no llama a Groq pese a lo que digan los mensajes de commit. |
+| `climateAPI.js` | **ELIMINADO** (2026-09-07) | Era código muerto: apuntaba a rutas `/api/climate/*` del backend Flask viejo. |
+| `groqCropAI.js` | **presente, NO conectado** | No lo importa nadie. El análisis de cultivos actual es **local/heurístico** (rangos de temp/precip/altitud) dentro de `UserMapDashboard.jsx`. Se mantiene como base para cuando se active la IA; requiere `REACT_APP_GROQ_API_KEY`. |
 
 `errorHandler.js` (`src/utils/`) centraliza el manejo de errores de axios y el redirect al login
 cuando el token expira (401).
@@ -410,6 +411,9 @@ está conectado**. Si se reactiva, requiere `REACT_APP_GROQ_API_KEY`.
 | 5 | Eliminado backend Flask muerto (`app.py`, `climate_routes.py`, `database.py`) | — |
 | 6 | Fix `UnicodeEncodeError` en consola Windows (los `print()` con emojis rompían `/climate-data/`) | `settings.py` |
 | 7 | Añadidos `backend/.env.example` y `frontend/.env.example` | — |
+| 8 | Fix crash `Cannot read properties of undefined (reading 'legend')`: el mapa reventaba si `dashboard_variables` estaba vacía. Ahora usa `LAYER_DEFS` como fallback y corrige la variable activa | `pages/UserMapDashboard.jsx` |
+| 9 | Eliminado más código muerto: `api/climateAPI.js`, `App.css`, `styles/AdminReset.css`, `styles/adminSharedStyles.js`, `api/dataset_utils.py` (este último roto: importaba `datasets_col` inexistente) | varios |
+| 10 | Encabezados de módulo añadidos a los archivos del frontend que no tenían comentarios (`Login`, `Register`, `UserPanel`, `AdminDashboard`, `AdminUsers`, `AdminCrops`, `AdminVariables`, `api/api.js`) | varios |
 
 > **Efecto colateral esperado del cambio 1**: al cambiar la clave de firma, los tokens JWT
 > emitidos antes dejan de ser válidos. Los usuarios simplemente vuelven a iniciar sesión una vez.
@@ -434,10 +438,13 @@ está conectado**. Si se reactiva, requiere `REACT_APP_GROQ_API_KEY`.
 | Inconsistencia de rutas | Unas cuelgan de la raíz (`/login/`) y otras llevan `api/` literal en la cadena (`/api/admin/variables/`). Unificar bajo un único prefijo `/api/`. |
 | `print()` de depuración | `views.py` tiene muchísimos `print(...)` con emojis. Migrar a `logging`. |
 | DRF sin usar | `rest_framework` está en `INSTALLED_APPS` pero las vistas son `JsonResponse` a mano. O se adopta DRF, o se quita. |
-| `models.py` / `migrations/` vacíos | No se usa el ORM; se pueden dejar (Django los espera) pero conviene un comentario. |
+| `models.py` / `tests.py` / `admin.py` vacíos | No se usa el ORM; se pueden dejar (Django los espera) pero conviene un comentario. |
 | `JWT_EXP_DAYS` | Declarada en `.env` y `settings.py` pero `create_jwt` usa 60 min fijos. Decidir cuál manda. |
 | Dos librerías de charts | `chart.js` y `recharts` a la vez. Elegir una. |
-| `climateAPI.js` / `groqCropAI.js` | Código muerto en el frontend. Borrar o reconectar. |
+| `groqCropAI.js` | Presente pero sin conectar. Reconectar (con `REACT_APP_GROQ_API_KEY`) o borrar. |
+| `App.test.js` | Test por defecto de CRA (busca "learn react"); `npm test` falla. Reemplazar o borrar. |
+| `src/logo.svg` | No se importa; los PDF usan `/logo/*.jpg` de `public/`. Borrar. |
+| Ruta `/climate` (`ClimateDashboard.jsx`) | Montada pero nada navega allí. Decidir si se enlaza o se elimina. |
 | `UserMapDashboard.jsx` | ~4700 líneas en un solo archivo. Candidato a partir en hooks/subcomponentes. |
 | Muchos warnings de ESLint | Variables sin usar y dependencias de `useEffect` incompletas. No rompen el build. |
 | Versión de Django | `requirements.txt` dice `Django>=4.2`; el venv tiene 6.1.x; comentarios mencionan 5.2. Fijar rango. |

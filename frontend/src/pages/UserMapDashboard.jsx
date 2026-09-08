@@ -398,6 +398,15 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         const res = await API.get("/public/variables/");
         const vars = res.data.variables;
 
+        // Si el backend todavía no tiene variables configuradas, usar las
+        // capas hardcodeadas (LAYER_DEFS) como fallback para no dejar el
+        // dashboard sin ninguna capa (lo que provocaba un crash al render).
+        if (!Array.isArray(vars) || vars.length === 0) {
+          setLayerDefs(LAYER_DEFS);
+          setLoadingLayers(false);
+          return;
+        }
+
         // Construir layerDefs desde las variables del backend
         const newLayerDefs = {};
         vars.forEach(v => {
@@ -420,6 +429,15 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         });
 
         setLayerDefs(newLayerDefs);
+
+        // Si la variable activa por defecto ("Temperatura del mar") no existe
+        // entre las capas que devuelve el backend, seleccionar la primera
+        // disponible para evitar accesos a layerDefs[activeVar] indefinidos.
+        if (!newLayerDefs[activeVar]) {
+          const primera = Object.keys(newLayerDefs)[0];
+          if (primera) setActiveVar(primera);
+        }
+
         setLoadingLayers(false);
         console.log("✅ Capas cargadas desde el backend:", Object.keys(newLayerDefs));
       } catch (error) {
@@ -3961,8 +3979,10 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     })();
   }, [downloadDateRange]);
 
-  // Obtener configuración de leyenda de la variable activa
-  const legend = layerDefs[activeVar].legend;
+  // Obtener configuración de leyenda de la variable activa.
+  // Puede no existir todavía si el backend aún no cargó las capas o si la
+  // variable activa no coincide con ninguna capa disponible.
+  const legend = layerDefs[activeVar]?.legend || { colors: [], min: 0, max: 100, unit: "" };
 
   // ============================================================================
   // RENDERIZADO DEL COMPONENTE

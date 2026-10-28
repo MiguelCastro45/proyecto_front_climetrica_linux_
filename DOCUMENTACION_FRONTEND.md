@@ -45,7 +45,6 @@ frontend/
 │   ├── api/                 # Servicios de API
 │   │   ├── api.js           # Cliente Axios configurado
 │   │   ├── climateAPI.js    # API de datos climáticos
-│   │   ├── groqCropAI.js    # Integración IA (Groq)
 │   │   └── Save_climate_data_helper.js
 │   │
 │   ├── components/          # Componentes reutilizables
@@ -223,7 +222,6 @@ Componente para gestión de cultivos.
 **Características**:
 - CRUD de cultivos
 - Definición de requerimientos climáticos
-- Análisis de aptitud con IA
 - Gestión de imágenes
 - Activar/desactivar cultivos
 
@@ -409,7 +407,7 @@ Dashboard principal con mapa interactivo y análisis climático.
 - Gráficos de series temporales
 - Estadísticas calculadas
 - Exportación JSON/PDF
-- Análisis con IA
+- Análisis de aptitud de cultivos (reglas locales)
 - Guardado de consultas
 
 **Estado principal**:
@@ -450,7 +448,7 @@ handleCropSelect(crop)           // Seleccionar cultivo
 handlePointSelect(latlng)        // Seleccionar punto
 handlePolygonComplete(polygon)   // Completar polígono
 fetchClimateData()               // Obtener datos climáticos
-analyzeCrop()                    // Analizar cultivo con IA
+analyzeCrop()                    // Analizar aptitud del cultivo (reglas locales)
 saveData()                       // Guardar consulta
 exportJSON()                     // Exportar a JSON
 exportPDF()                      // Exportar a PDF
@@ -658,90 +656,6 @@ export const calculateStatistics = (timeSeries) => {
 
 ---
 
-### groqCropAI.js
-
-Integración con IA (Groq) para análisis de cultivos.
-
-```javascript
-import axios from 'axios';
-
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY;
-
-/**
- * Analizar aptitud de cultivo con IA
- */
-export const analyzeCropSuitability = async (cropData, climateData, location) => {
-  const prompt = `
-Analiza la aptitud del cultivo ${cropData.nombre} (${cropData.nombre_cientifico})
-en la ubicación ${location} con las siguientes condiciones climáticas:
-
-REQUERIMIENTOS DEL CULTIVO:
-- Temperatura óptima: ${cropData.requerimientos.temperatura_optima}°C
-- Rango temperatura: ${cropData.requerimientos.temperatura_min}°C - ${cropData.requerimientos.temperatura_max}°C
-- Precipitación: ${cropData.requerimientos.precipitacion_min}-${cropData.requerimientos.precipitacion_max} mm/año
-- Altitud: ${cropData.requerimientos.altitud_min}-${cropData.requerimientos.altitud_max} m.s.n.m.
-- Humedad: ${cropData.requerimientos.humedad_min}-${cropData.requerimientos.humedad_max}%
-
-CONDICIONES ACTUALES:
-- Temperatura promedio: ${climateData.temperatura}°C
-- Precipitación anual: ${climateData.precipitacion} mm
-- Altitud: ${climateData.altitud} m.s.n.m.
-- Humedad: ${climateData.humedad}%
-
-Proporciona:
-1. Nivel de aptitud (Excelente/Bueno/Regular/Inadecuado)
-2. Score numérico de 0-100
-3. Recomendaciones específicas (3-5 puntos)
-4. Riesgos identificados (2-4 puntos)
-5. Mejores prácticas para esta zona
-`;
-
-  const response = await axios.post(
-    GROQ_API_URL,
-    {
-      model: 'mixtral-8x7b-32768',
-      messages: [
-        {
-          role: 'system',
-          content: 'Eres un experto agrónomo especializado en análisis de aptitud de cultivos.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000
-    },
-    {
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    }
-  );
-
-  return parseAIResponse(response.data.choices[0].message.content);
-};
-
-/**
- * Parsear respuesta de IA
- */
-const parseAIResponse = (text) => {
-  // Extraer información estructurada
-  return {
-    aptitud: extractAptitud(text),
-    score: extractScore(text),
-    recomendaciones: extractList(text, 'recomendaciones'),
-    riesgos: extractList(text, 'riesgos'),
-    mejoresPracticas: extractList(text, 'mejores prácticas')
-  };
-};
-```
-
----
-
 ### Save_climate_data_helper.js
 
 Helper para guardar datos climáticos.
@@ -872,7 +786,6 @@ REACT_APP_API_URL=http://localhost:8000
 
 # APIs Externas
 REACT_APP_OWM_KEY=tu_api_key_openweathermap
-REACT_APP_GROQ_API_KEY=tu_api_key_groq
 
 # Encriptación
 REACT_APP_ENCRYPTION_KEY=tu_clave_de_encriptacion_compartida_con_backend
@@ -1019,8 +932,8 @@ const decrypted = CryptoJS.AES.decrypt(encrypted, key)
 2. Usuario selecciona ubicación
 3. Sistema obtiene datos climáticos de la zona
 4. Sistema consulta requerimientos del cultivo
-5. Sistema envía datos a IA (Groq)
-6. IA analiza y genera recomendaciones
+5. Sistema compara las condiciones con los rangos óptimos del cultivo
+6. Sistema calcula aptitud, riesgos y cómo subsanarlos
 7. Sistema muestra resultados
 8. Usuario puede guardar análisis
 
@@ -1084,7 +997,6 @@ vercel --prod
 Configurar en el panel de hosting:
 - `REACT_APP_API_URL`
 - `REACT_APP_OWM_KEY`
-- `REACT_APP_GROQ_API_KEY`
 - `REACT_APP_ENCRYPTION_KEY`
 
 ---

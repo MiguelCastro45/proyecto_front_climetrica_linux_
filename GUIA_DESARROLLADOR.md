@@ -3,9 +3,6 @@
 > Documento de arranque para quien se incorpora al proyecto (especialmente al **backend**).
 > Complementa a `ARQUITECTURA_SISTEMA.md`, `DOCUMENTACION_BACKEND.md` y `DOCUMENTACION_FRONTEND.md`.
 > Última revisión: 2026-09-07.
->
-> **Versión visual (página web) de esta guía:** https://claude.ai/code/artifact/cf70f4cc-c418-4df6-80ad-fb91a0db067c
-> (arquitectura, jerarquía del frontend, endpoints, API keys, base de datos y auditoría de código muerto en formato navegable).
 
 ---
 
@@ -172,7 +169,6 @@ Login en `http://localhost:3000` con `admin@local.dev` / `Admin123!`.
 |----------|----------|
 | `REACT_APP_ENCRYPTION_KEY` | Clave AES del login (igual que el backend) |
 | `REACT_APP_OWM_KEY` | API key de OpenWeatherMap para las capas raster de temperatura/viento |
-| `REACT_APP_GROQ_API_KEY` | API key de Groq para el análisis IA de cultivos (opcional; hoy no está cableado) |
 
 > En una app de React **todo `REACT_APP_*` termina en el bundle público**. No pongas ahí
 > secretos de servidor. La `REACT_APP_OWM_KEY` es de cliente por naturaleza (va en la URL del
@@ -349,7 +345,8 @@ independiente.
 | `api.js` | **en uso** | Instancia axios, `baseURL: http://localhost:8000`, interceptor que añade `Authorization: Bearer` desde `localStorage`. Lo usan Login, Register, UserPanel, AdminUsers/Variables/Crops, etc. |
 | `Save_climate_data_helper.js` | **en uso** (lo importa `UserMapDashboard`) | `saveClimateData()`, `getClimateDataByUser()`, `deleteClimateData()` contra `/climate-data/…`. Arma el documento grande que se guarda en Mongo. |
 | `climateAPI.js` | **ELIMINADO** (2026-09-07) | Era código muerto: apuntaba a rutas `/api/climate/*` del backend Flask viejo. |
-| `groqCropAI.js` | **presente, NO conectado** | No lo importa nadie. El análisis de cultivos actual es **local/heurístico** (rangos de temp/precip/altitud) dentro de `UserMapDashboard.jsx`. Se mantiene como base para cuando se active la IA; requiere `REACT_APP_GROQ_API_KEY`. |
+
+El análisis de cultivos es **local/heurístico** (rangos de temp/precip/altitud) dentro de `UserMapDashboard.jsx`.
 
 `errorHandler.js` (`src/utils/`) centraliza el manejo de errores de axios y el redirect al login
 cuando el token expira (401).
@@ -373,9 +370,6 @@ climáticos guardados**.
 | **Open-Elevation** | `api.open-elevation.com/api/v1/lookup` | Altitud de un punto (usada en el análisis de cultivos) | No |
 | **RainViewer** | `api.rainviewer.com` + `tilecache.rainviewer.com` | Radar de precipitación animado | No |
 | **ArcGIS World Imagery** | `server.arcgisonline.com/…/World_Imagery/…` | Mapa base satélite | No |
-
-**C. Groq (IA)**: `api.groq.com/openai/v1/chat/completions` — **sólo en `groqCropAI.js`, que no
-está conectado**. Si se reactiva, requiere `REACT_APP_GROQ_API_KEY`.
 
 ### 7.6 Flujo típico de uso (productor)
 
@@ -441,7 +435,6 @@ está conectado**. Si se reactiva, requiere `REACT_APP_GROQ_API_KEY`.
 | `models.py` / `tests.py` / `admin.py` vacíos | No se usa el ORM; se pueden dejar (Django los espera) pero conviene un comentario. |
 | `JWT_EXP_DAYS` | Declarada en `.env` y `settings.py` pero `create_jwt` usa 60 min fijos. Decidir cuál manda. |
 | Dos librerías de charts | `chart.js` y `recharts` a la vez. Elegir una. |
-| `groqCropAI.js` | Presente pero sin conectar. Reconectar (con `REACT_APP_GROQ_API_KEY`) o borrar. |
 | `App.test.js` | Test por defecto de CRA (busca "learn react"); `npm test` falla. Reemplazar o borrar. |
 | `src/logo.svg` | No se importa; los PDF usan `/logo/*.jpg` de `public/`. Borrar. |
 | Ruta `/climate` (`ClimateDashboard.jsx`) | Montada pero nada navega allí. Decidir si se enlaza o se elimina. |

@@ -1,0 +1,55 @@
+/* Encabezado de marca: Pulso Productivo (antes Climétrica) */
+.brand-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: #23206f;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.brand-pulse {
+  flex-shrink: 0;
+  fill: none;
+  stroke: #2fd59a;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brand-former {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.55;
+}
+
+.brand-former-label {
+  font-size: 11px;
+  color: #555;
+  font-style: italic;
+}
+
+.brand-former-logo {
+  height: auto;
+}
+
+/* Tamaño grande (login, registro, recuperar contraseña) */
+.brand-lg .brand-title { font-size: 34px; }
+.brand-lg .brand-pulse { width: 52px; height: 26px; }
+.brand-lg .brand-former-logo { width: 120px; }
+
+/* Tamaño mediano (panel lateral) */
+.brand-md .brand-title { font-size: 22px; }
+.brand-md .brand-pulse { width: 34px; height: 18px; }
+.brand-md .brand-former-logo { width: 90px; }

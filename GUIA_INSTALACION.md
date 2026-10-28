@@ -370,10 +370,6 @@ REACT_APP_API_URL=http://localhost:8000
 # Obtener en: https://openweathermap.org/api
 REACT_APP_OWM_KEY=tu_api_key_de_openweathermap
 
-# Groq API Key (para análisis con IA)
-# Obtener en: https://console.groq.com/
-REACT_APP_GROQ_API_KEY=tu_api_key_de_groq
-
 
 # ===========================================
 # CONFIGURACIÓN DE ENCRIPTACIÓN
@@ -396,9 +392,6 @@ REACT_APP_MAP_DEFAULT_ZOOM=12
 # ===========================================
 # FEATURE FLAGS
 # ===========================================
-
-# Habilitar análisis con IA
-REACT_APP_ENABLE_AI_ANALYSIS=true
 
 # Habilitar exportación a PDF
 REACT_APP_ENABLE_PDF_EXPORT=true
@@ -461,14 +454,6 @@ python3 -c "import base64; import os; print(base64.b64encode(os.urandom(32)).dec
 3. API keys
 4. Crear nueva key
 5. Copiar y usar en `REACT_APP_OWM_KEY`
-
-#### Groq (IA)
-
-1. Ir a [Groq Console](https://console.groq.com/)
-2. Sign up / Login
-3. API Keys
-4. Create API Key
-5. Copiar y usar en `REACT_APP_GROQ_API_KEY`
 
 ---
 
@@ -1040,7 +1025,6 @@ mongorestore --db climetricadb backup/20251215/climetricadb/
 - [Documentación Frontend](DOCUMENTACION_FRONTEND.md)
 - [Documentación de Código](DOCUMENTACION_CODIGO.md)
 - [Sistema de Animaciones](SISTEMA_ANIMACIONES.md)
-- [Integración IA](INTEGRACION_IA_CULTIVOS.md)
 
 ---
 

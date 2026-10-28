@@ -23,7 +23,6 @@
 
 1. [DOCUMENTACION_FRONTEND.md](DOCUMENTACION_FRONTEND.md) - Componentes y páginas
 2. [SISTEMA_ANIMACIONES.md](SISTEMA_ANIMACIONES.md) - Mapas y animaciones
-3. [INTEGRACION_IA_CULTIVOS.md](INTEGRACION_IA_CULTIVOS.md) - Integración con IA
 
 ### Para Desarrolladores Backend
 
@@ -70,7 +69,6 @@
 | Documento | Descripción | Contenido |
 |-----------|-------------|-----------|
 | [SISTEMA_ANIMACIONES.md](SISTEMA_ANIMACIONES.md) | Capas animadas de mapa | • Leaflet<br>• Series temporales<br>• Capas WMTS/WMS |
-| [INTEGRACION_IA_CULTIVOS.md](INTEGRACION_IA_CULTIVOS.md) | Análisis con IA | • Groq API<br>• Mixtral<br>• Recomendaciones |
 | [COMO_AGREGAR_VARIABLES.md](COMO_AGREGAR_VARIABLES.md) | Agregar variables | • Configuración<br>• APIs<br>• Capas |
 | [DOCUMENTACION_CODIGO.md](DOCUMENTACION_CODIGO.md) | Código documentado | • Funciones<br>• Clases<br>• Módulos |
 
@@ -144,7 +142,6 @@
   - OpenWeatherMap
   - NASA POWER
   - Open-Meteo
-  - Groq AI
 • Seguridad
   - Autenticación
   - Encriptación
@@ -196,7 +193,6 @@
 • Servicios API
   - api.js
   - climateAPI.js
-  - groqCropAI.js
 • Estilos
   - Tailwind CSS
   - CSS Modules
@@ -238,17 +234,6 @@
 • Implementación
 ```
 
-### INTEGRACION_IA_CULTIVOS.md
-```
-• Integración con Groq
-• Modelo Mixtral 8x7b
-• Análisis de aptitud de cultivos
-• Generación de recomendaciones
-• Identificación de riesgos
-• Mejores prácticas agrícolas
-• Prompts y configuración
-```
-
 ### DOCUMENTACION_CODIGO.md
 ```
 • Backend
@@ -282,10 +267,8 @@ climetrica/
 ├── DOCUMENTACION_CODIGO.md            # Doc código
 │
 ├── SISTEMA_ANIMACIONES.md             # Animaciones y mapas
-├── INTEGRACION_IA_CULTIVOS.md         # IA para cultivos
 ├── COMO_AGREGAR_VARIABLES.md          # Agregar variables
 ├── SEGURIDAD_ENCRIPTACION.md          # Seguridad
-├── README_IA.md                       # Info sobre IA
 │
 ├── backend/
 │   ├── api/
@@ -344,7 +327,6 @@ climetrica/
     │   ├── api/
     │   │   ├── api.js
     │   │   ├── climateAPI.js
-    │   │   ├── groqCropAI.js
     │   │   └── ...
     │   │
     │   ├── styles/
@@ -377,8 +359,6 @@ climetrica/
 
 **Mapas**: [SISTEMA_ANIMACIONES.md](SISTEMA_ANIMACIONES.md)
 
-**IA**: [INTEGRACION_IA_CULTIVOS.md](INTEGRACION_IA_CULTIVOS.md)
-
 **Scripts**: [DOCUMENTACION_SCRIPTS.md](DOCUMENTACION_SCRIPTS.md)
 
 **Deployment**: [GUIA_INSTALACION.md](GUIA_INSTALACION.md#deployment-en-producción)
@@ -396,8 +376,6 @@ climetrica/
 **Leaflet**: [SISTEMA_ANIMACIONES.md](SISTEMA_ANIMACIONES.md)
 
 **JWT**: [SEGURIDAD_ENCRIPTACION.md](SEGURIDAD_ENCRIPTACION.md)
-
-**Groq AI**: [INTEGRACION_IA_CULTIVOS.md](INTEGRACION_IA_CULTIVOS.md)
 
 ---
 

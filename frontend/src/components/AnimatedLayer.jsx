@@ -114,6 +114,38 @@ const LAYER_ANIMATIONS = {
 /**
  * Convierte color hex a rgba con opacidad
  */
+/**
+ * Contorno aproximado de América del Sur ([lat, lng]) para distinguir tierra
+ * y mar en las animaciones (oceanOnly / landOnly). Sigue la costa pacífica
+ * de Colombia (Cauca, Nariño) para que la animación de "Temperatura del mar"
+ * se vea sobre el Pacífico y no se dibuje sobre tierra.
+ */
+const SUDAMERICA = [
+  [8.7, -77.4], [11.0, -74.8], [12.4, -71.7], [11.5, -69.8], [10.6, -66.0],
+  [10.7, -62.0], [8.5, -60.0], [6.0, -57.0], [5.5, -54.0], [4.0, -51.5],
+  [1.5, -50.0], [-1.0, -48.0], [-2.5, -44.0], [-3.0, -40.0], [-5.0, -36.0],
+  [-8.0, -34.8], [-13.0, -38.5], [-18.0, -39.5], [-23.0, -42.0], [-24.5, -47.0],
+  [-28.0, -48.5], [-33.0, -52.5], [-35.0, -56.5], [-38.5, -57.5], [-41.0, -62.5],
+  [-45.0, -66.0], [-48.0, -65.8], [-52.3, -68.5], [-55.0, -67.5], [-54.5, -71.5],
+  [-50.0, -75.5], [-44.0, -74.5], [-37.0, -73.6], [-30.0, -71.6], [-23.0, -70.5],
+  [-18.3, -70.4], [-15.0, -75.5], [-12.0, -77.2], [-6.0, -81.1], [-4.0, -81.3],
+  [-2.2, -80.9], [0.0, -80.1], [1.2, -79.0], [1.8, -78.8], [2.6, -78.2],
+  [3.6, -77.3], [5.5, -77.4], [7.0, -77.8],
+];
+
+/** Punto en polígono (ray casting). poligono: lista de [lat, lng]. */
+function puntoEnPoligono(lat, lng, poligono) {
+  let dentro = false;
+  for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
+    const [yi, xi] = poligono[i];
+    const [yj, xj] = poligono[j];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+      dentro = !dentro;
+    }
+  }
+  return dentro;
+}
+
 function hexToRgba(hex, alpha = 1) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return `rgba(255, 255, 255, ${alpha})`;
@@ -300,8 +332,8 @@ class FlowLine {
       { latMin: 20, latMax: 70, lngMin: -165, lngMax: -55 },
       // América Central
       { latMin: 8, latMax: 22, lngMin: -105, lngMax: -78 },
-      // América del Sur
-      { latMin: -55, latMax: 12, lngMin: -80, lngMax: -36 },
+      // América del Sur: se evalúa con el polígono SUDAMERICA (ver abajo),
+      // porque un rectángulo marcaba como tierra la costa pacífica.
       // Europa
       { latMin: 38, latMax: 70, lngMin: -8, lngMax: 38 },
       // África
@@ -340,7 +372,7 @@ class FlowLine {
     const isOverLand = landRegions.some(region =>
       lat >= region.latMin && lat <= region.latMax &&
       lng >= region.lngMin && lng <= region.lngMax
-    );
+    ) || puntoEnPoligono(lat, lng, SUDAMERICA);
 
     return !isOverLand;
   }
@@ -386,8 +418,8 @@ class FlowLine {
       { latMin: 20, latMax: 70, lngMin: -165, lngMax: -55 },
       // América Central
       { latMin: 8, latMax: 22, lngMin: -105, lngMax: -78 },
-      // América del Sur
-      { latMin: -55, latMax: 12, lngMin: -80, lngMax: -36 },
+      // América del Sur: se evalúa con el polígono SUDAMERICA (ver abajo),
+      // porque un rectángulo marcaba como tierra la costa pacífica.
       // Europa
       { latMin: 38, latMax: 70, lngMin: -8, lngMax: 38 },
       // África
@@ -426,7 +458,7 @@ class FlowLine {
     const isOverLand = landRegions.some(region =>
       lat >= region.latMin && lat <= region.latMax &&
       lng >= region.lngMin && lng <= region.lngMax
-    );
+    ) || puntoEnPoligono(lat, lng, SUDAMERICA);
 
     return isOverLand;
   }

@@ -114,7 +114,6 @@ Ver [ESTRUCTURA_PROYECTO.md](ESTRUCTURA_PROYECTO.md) para más detalles.
 ### Características Específicas
 
 - **[Sistema de Animaciones](SISTEMA_ANIMACIONES.md)** - Capas animadas y series temporales
-- **[Integración IA](INTEGRACION_IA_CULTIVOS.md)** - Análisis de cultivos con IA (Groq)
 - **[Cómo Agregar Variables](COMO_AGREGAR_VARIABLES.md)** - Guía para agregar nuevas variables climáticas
 
 ### Configuración y Seguridad

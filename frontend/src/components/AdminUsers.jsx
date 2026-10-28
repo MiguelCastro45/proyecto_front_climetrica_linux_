@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from "react";
 import API from "../api/api";
 import "../styles/AdminTabsEncapsulated.css?v=11";
+import { ACTORES, getRoleLabel } from "../config/actores";
 
 export default function AdminUsers({ showNotification }) {
   const [users, setUsers] = useState([]);
@@ -422,7 +423,7 @@ export default function AdminUsers({ showNotification }) {
                 <tr key={user._id}>
                   <td>{user.first_name} {user.last_name}</td>
                   <td>{user.email}</td>
-                  <td><span className="category-badge">{user.role === "admin" ? "Administrador" : user.role}</span></td>
+                  <td><span className="category-badge">{getRoleLabel(user.role)}</span></td>
                   <td>{user.phone || "-"}</td>
                   <td className="actions-cell">
                     <button
@@ -512,9 +513,12 @@ export default function AdminUsers({ showNotification }) {
                 <div className="form-group">
                   <label>Rol *</label>
                   <select name="role" value={form.role} onChange={handleChange}>
-                    <option value="productor">Productor</option>
-                    <option value="vendedor">Vendedor</option>
-                    <option value="inversionista">Inversionista</option>
+                    {Object.entries(ACTORES).map(([key, a]) => (
+                      <option key={key} value={key}>{a.label}</option>
+                    ))}
+                    {/* Roles anteriores: se conservan para editar cuentas existentes */}
+                    <option value="vendedor">Vendedor (anterior)</option>
+                    <option value="inversionista">Inversionista (anterior)</option>
                     <option value="admin">Administrador</option>
                   </select>
                 </div>

@@ -12,6 +12,8 @@ import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { handleAPIError } from "../utils/errorHandler";
 import "../styles/register.css";
+import BrandHeader from "../components/BrandHeader";
+import { ACTORES } from "../config/actores";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -241,6 +243,7 @@ export default function Register() {
   return (
     <div className="register-container">
       <form onSubmit={handleSubmit} className="register-form">
+        <BrandHeader size="lg" />
         <h2>Registro de Usuario</h2>
 
         <div className="form-row">
@@ -292,10 +295,10 @@ export default function Register() {
           </div>
 
           <div className="input-group">
-            <select name="rol" value={form.rol} onChange={handleChange} required>
-              <option value="productor">Productor</option>
-              <option value="vendedor">Vendedor</option>
-              <option value="inversionista">Inversionista</option>
+            <select name="rol" value={form.rol} onChange={handleChange} required title="Tipo de actor en la cadena agroalimentaria">
+              {Object.entries(ACTORES).map(([key, a]) => (
+                <option key={key} value={key}>{a.icono} {a.label}</option>
+              ))}
             </select>
           </div>
         </div>

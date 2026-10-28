@@ -1,0 +1,170 @@
+/* Formulario "Mis datos del cultivo" */
+.crf {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+  color: #333;
+}
+
+.crf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.crf-header h4 {
+  margin: 0;
+  color: #23206f;
+}
+
+.crf-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.crf-form {
+  padding: 14px;
+  border: 1px solid #d1fae5;
+  border-radius: 10px;
+  background: #f8fffb;
+}
+
+.crf-grid,
+.crf-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px 14px;
+}
+
+.crf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.crf-field-wide {
+  grid-column: 1 / -1;
+}
+
+.crf-field label {
+  font-weight: 600;
+  color: #444;
+}
+
+.crf-input {
+  padding: 7px 9px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+}
+
+.crf-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.crf-input-error {
+  border-color: #ef4444;
+}
+
+.crf-error {
+  color: #dc2626;
+  font-size: 12px;
+}
+
+.crf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.crf-btn {
+  padding: 7px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.crf-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crf-btn-primary {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+  font-weight: 600;
+}
+
+.crf-btn-danger {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.crf-btn-small {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
+.crf-msg {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.crf-msg-ok { background: #ecfdf5; color: #047857; }
+.crf-msg-error { background: #fef2f2; color: #b91c1c; }
+
+.crf-empty {
+  padding: 16px;
+  text-align: center;
+  color: #888;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.crf-entry {
+  padding: 12px 14px;
+  border-left: 4px solid #23206f;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 13px;
+}
+
+.crf-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.crf-entry-head em {
+  color: #888;
+}
+
+.crf-entry-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.crf-note {
+  font-size: 11px;
+  color: #999;
+  font-style: italic;
+}

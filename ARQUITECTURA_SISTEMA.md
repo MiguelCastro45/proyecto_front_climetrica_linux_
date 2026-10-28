@@ -66,7 +66,7 @@ Climétrica es un sistema web de monitoreo climático diseñado con una arquitec
 │  │  └──────────────┘  └──────────────┘  └──────────┘ │    │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────┐ │    │
 │  │  │  Endpoints   │  │  Servicios   │  │ Utilid.  │ │    │
-│  │  │  REST API    │  │  Email/IA    │  │ Crypto   │ │    │
+│  │  │  REST API    │  │  Email       │  │ Crypto   │ │    │
 │  │  └──────────────┘  └──────────────┘  └──────────┘ │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                           │                                   │
@@ -95,8 +95,8 @@ Climétrica es un sistema web de monitoreo climático diseñado con una arquitec
 │  │OpenWeatherMap│ │  NASA POWER  │ │   Open-Meteo      │    │
 │  └──────────────┘ └──────────────┘ └───────────────────┘    │
 │  ┌──────────────┐ ┌──────────────┐ ┌───────────────────┐    │
-│  │    Groq AI   │ │  Leaflet     │ │  Nominatim        │    │
-│  │   (Mixtral)  │ │  Tile Srv    │ │  (Geocoding)      │    │
+│  │  NASA GIBS   │ │  Leaflet     │ │  Nominatim        │    │
+│  │   (WMTS)     │ │  Tile Srv    │ │  (Geocoding)      │    │
 │  └──────────────┘ └──────────────┘ └───────────────────┘    │
 └───────────────────────────────────────────────────────────────┘
 ```
@@ -315,52 +315,38 @@ api/
 
 ---
 
-### 3. Análisis de Cultivo con IA
+### 3. Análisis de Cultivo
+
+El análisis se calcula en el frontend (`UserMapDashboard.jsx`) con reglas
+agronómicas: compara las condiciones del punto con los rangos óptimos del cultivo.
 
 ```
-┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-│ Cliente │    │ Backend │    │   DB    │    │ Groq AI │    │NASA/OWM │
-└────┬────┘    └────┬────┘    └────┬────┘    └────┬────┘    └────┬────┘
-     │              │              │              │              │
-     │ 1. Select    │              │              │              │
-     │    cultivo   │              │              │              │
-     │              │              │              │              │
-     │ 2. GET /api/ │              │              │              │
-     │    crops/    │              │              │              │
-     ├─────────────>│              │              │              │
-     │              │ crops.find() │              │              │
-     │              ├─────────────>│              │              │
-     │              │              │              │              │
-     │    Cultivos  │              │              │              │
-     │<─────────────┤<─────────────┤              │              │
-     │              │              │              │              │
-     │ 3. Obtener   │              │              │              │
-     │    datos     │              │              │              │
-     │    climáticos│              │              │              │
-     ├───────────────────────────────────────────────────────────>│
-     │              │              │              │              │
-     │  Datos       │              │              │              │
-     │  climáticos  │              │              │              │
-     │<───────────────────────────────────────────────────────────┤
-     │              │              │              │              │
-     │ 4. Analizar  │              │              │              │
-     │    con IA    │              │              │              │
-     ├─────────────────────────────────────────────────────────>│
-     │              │              │              │              │
-     │  (Prompt:    │              │              │              │
-     │   cultivo +  │              │              │              │
-     │   clima +    │              │              │              │
-     │   ubicación) │              │              │              │
-     │              │              │              │              │
-     │              │              │   Análisis   │              │
-     │              │              │   (recomend, │              │
-     │              │              │    riesgos,  │              │
-     │              │              │    score)    │              │
-     │<─────────────────────────────────────────────────────────┤
-     │              │              │              │              │
-     │ 5. Mostrar   │              │              │              │
-     │    resultados│              │              │              │
-     │              │              │              │              │
+┌─────────┐    ┌─────────┐    ┌─────────┐    ┌──────────────────────┐
+│ Cliente │    │ Backend │    │   DB    │    │ Open-Meteo /         │
+│         │    │         │    │         │    │ Open-Elevation       │
+└────┬────┘    └────┬────┘    └────┬────┘    └──────────┬───────────┘
+     │              │              │                    │
+     │ 1. Select    │              │                    │
+     │    cultivo   │              │                    │
+     │              │              │                    │
+     │ 2. GET /api/ │              │                    │
+     │    crops/    │              │                    │
+     ├─────────────>│              │                    │
+     │              │ crops.find() │                    │
+     │              ├─────────────>│                    │
+     │    Cultivos  │              │                    │
+     │<─────────────┤<─────────────┤                    │
+     │              │              │                    │
+     │ 3. Obtener temperatura, precipitación y altitud  │
+     ├─────────────────────────────────────────────────>│
+     │<─────────────────────────────────────────────────┤
+     │              │              │                    │
+     │ 4. Calcular aptitud (temp/precip/altitud vs      │
+     │    rangos óptimos), riesgos, cómo subsanarlos    │
+     │    y proveedores de insumos cercanos             │
+     │              │              │                    │
+     │ 5. Mostrar   │              │                    │
+     │    resultados│              │                    │
 ```
 
 ---
@@ -451,48 +437,6 @@ const BASE_URL = 'https://api.open-meteo.com/v1';
 
 ---
 
-### Servicios de IA
-
-#### Groq (Mixtral)
-
-**Propósito**: Análisis agroclimático con IA
-
-**Modelo**: `mixtral-8x7b-32768`
-
-**Uso**:
-```javascript
-const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${GROQ_API_KEY}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    model: 'mixtral-8x7b-32768',
-    messages: [
-      {
-        role: 'system',
-        content: 'Eres un experto agrónomo...'
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ],
-    temperature: 0.7,
-    max_tokens: 1000
-  })
-});
-```
-
-**Análisis proporcionados**:
-- Aptitud de cultivo para ubicación
-- Recomendaciones específicas
-- Identificación de riesgos
-- Mejores prácticas agrícolas
-- Score numérico de aptitud
-
----
 
 ### Servicios de Mapas
 
@@ -696,7 +640,7 @@ gunicorn backend.wsgi:application \
 │  └────────────────────────────────────────────────────┘    │
 │  ┌────────────────────────────────────────────────────┐    │
 │  │               API Services                          │    │
-│  │  api.js | climateAPI.js | groqCropAI.js           │    │
+│  │  api.js | Save_climate_data_helper.js                 │    │
 │  └────────────────────────────────────────────────────┘    │
 └──────────────────────────────────────────────────────────────┘
                               │

@@ -1,0 +1,44 @@
+/* Sección: cómo subsanar los riesgos y oportunidades */
+.risk-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.risk-actions-title {
+  margin: 0;
+  font-size: 15px;
+  color: #047857;
+}
+
+.risk-action-card {
+  padding: 10px 12px;
+  border-left: 4px solid #10b981;
+  border-radius: 8px;
+  background: #f0fdf4;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #333;
+}
+
+.risk-action-head {
+  font-weight: 700;
+  color: #b45309;
+  margin-bottom: 4px;
+}
+
+.risk-action-row {
+  margin-top: 4px;
+}
+
+.risk-action-nearby ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+}
+
+.risk-actions-note {
+  font-size: 11px;
+  color: #999;
+  font-style: italic;
+}

@@ -1,0 +1,96 @@
+/* Panel flotante de variable de mercado */
+/* Va dentro de .um-top-row (debajo de la barra de controles), en el flujo
+   normal, para bajar junto con la barra si esta ocupa dos líneas. */
+.market-panel {
+  position: relative;
+  width: 290px;
+  max-width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  font-size: 12px;
+  color: #333;
+}
+
+.market-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.market-panel-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #23206f;
+}
+
+.market-panel-close {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #888;
+}
+
+.market-panel-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.market-panel-value {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111;
+}
+
+.market-panel-unit {
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+}
+
+.market-panel-change {
+  font-weight: 600;
+}
+
+.market-panel-change.up { color: #16a34a; }
+.market-panel-change.down { color: #dc2626; }
+
+.market-panel-chart {
+  width: 100%;
+  height: 60px;
+  margin-top: 6px;
+}
+
+.market-panel-chart polyline {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.market-panel-chart polyline.up { stroke: #16a34a; }
+.market-panel-chart polyline.down { stroke: #dc2626; }
+
+.market-panel-range {
+  display: flex;
+  justify-content: space-between;
+  color: #666;
+  font-size: 11px;
+}
+
+.market-panel-note {
+  margin-top: 6px;
+  color: #999;
+  font-size: 10px;
+  font-style: italic;
+}

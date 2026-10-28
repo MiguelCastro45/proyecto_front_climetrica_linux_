@@ -14,7 +14,8 @@ import API from "../api/api";
 import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { handleAPIError } from "../utils/errorHandler";
-import "../styles/Login.css"; 
+import "../styles/Login.css";
+import BrandHeader from "../components/BrandHeader";
 
 
 
@@ -127,13 +128,7 @@ export default function Login() {
       )}
 
       <div className="login-card">
-        <div>
-      <img
-        src="/logo/1_img.jpg"
-        alt="Logo de Climétrica"
-        style={{ borderRadius: "100%", width: "320px" }}
-      />
-    </div>
+        <BrandHeader size="lg" />
 
         <h2>Iniciar Sesión</h2>
 

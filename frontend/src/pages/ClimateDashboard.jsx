@@ -9,6 +9,9 @@ import "leaflet/dist/leaflet.css";
 import API from "../api/api";
 import { handleAPIErrorWithAuth, handleAPIError } from "../utils/errorHandler";
 import styles from "../styles/ClimateDashboard.module.css";
+import RiskActions from "../components/RiskActions";
+import { generarAccionesRiesgo } from "../config/accionesRiesgo";
+import CropRecordForm from "../components/CropRecordForm";
 
 /**
  * Componente helper para capturar la referencia del mapa de Leaflet
@@ -343,7 +346,9 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
    * EFECTO: Actualizar serie en modal
    */
   useEffect(() => {
-    if (!showMap || !modalData || !modalData.serieTemporal || modalData.serieTemporal.length === 0) {
+    // La serie solo existe en la pestaña "Detalles"; al volver a ella el
+    // canvas es nuevo y hay que dibujar el gráfico otra vez.
+    if (activeTab !== 'detalles' || !showMap || !modalData || !modalData.serieTemporal || modalData.serieTemporal.length === 0) {
       if (modalCanvasRef.current && modalCanvasRef.current._chartInstance) {
         try {
           modalCanvasRef.current._chartInstance.destroy();
@@ -366,7 +371,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
       // No destruir el gráfico en cleanup para que persista al cambiar pestañas
       // Solo se destruirá cuando se cierre el modal o cambie modalData
     };
-  }, [showMap, modalData]);
+  }, [showMap, modalData, activeTab]);
 
   /**
    * FUNCIÓN MEJORADA: Manejar cambio de filtros
@@ -818,6 +823,9 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
 
     // Variable para rastrear si el mapa estaba oculto
     let wasMapHidden = false;
+    // El mapa y la serie solo se ven en "Detalles": si se descarga desde otra
+    // pestaña, se cambia a Detalles para capturarlos y luego se regresa.
+    const tabOriginal = activeTab;
 
     const loadingDiv = document.createElement('div');
     loadingDiv.className = styles.pdfLoading || 'pdf-loading';
@@ -828,11 +836,12 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
     try {
       // IMPORTANTE: Si el mapa no está visible, activarlo primero
       wasMapHidden = !showMap;
-      if (wasMapHidden) {
+      if (wasMapHidden || tabOriginal !== 'detalles') {
         console.log('⚠️ Activando vista de mapa para captura...');
         setShowMap(true);
-        // Esperar a que React renderice el mapa
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        setActiveTab('detalles');
+        // Esperar a que React renderice el mapa y el gráfico
+        await new Promise(resolve => setTimeout(resolve, 1200));
       }
 
       const doc = new jsPDF();
@@ -1325,6 +1334,45 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
             });
           });
           y += 5;
+
+          // Cómo subsanar los riesgos y oportunidades
+          const ub = modalData.cropAnalysis.ubicacion || {};
+          const accionesPdf = modalData.cropAnalysis.accionesRiesgo?.length
+            ? modalData.cropAnalysis.accionesRiesgo
+            : generarAccionesRiesgo(
+                modalData.cropAnalysis.riesgos,
+                Number(ub.lat ?? ub.latitud ?? modalData.latitud),
+                Number(ub.lng ?? ub.longitud ?? modalData.longitud)
+              );
+          if (accionesPdf.length > 0) {
+            checkNewPage(12);
+            doc.setTextColor(4, 120, 87);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text('Como subsanar los riesgos y oportunidades:', margin + 3, y);
+            y += 5;
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(8);
+            accionesPdf.forEach(a => {
+              const cercanos = (a.insumosCercanos || []).map(p => `${p.actividad} (${p.municipio}, ${p.distanciaKm} km)`).join('; ');
+              const lineas = [
+                `${a.titulo}`,
+                `Que hacer: ${a.accion}`,
+                a.oportunidad ? `Oportunidad: ${a.oportunidad}` : null,
+                cercanos ? `Insumos cercanos: ${cercanos}` : null,
+              ].filter(Boolean);
+              lineas.forEach((texto, i) => {
+                doc.setFont(undefined, i === 0 ? 'bold' : 'normal');
+                doc.splitTextToSize(i === 0 ? `• ${texto}` : texto, contentWidth - 8).forEach(line => {
+                  checkNewPage(4);
+                  doc.text(line, margin + (i === 0 ? 3 : 6), y);
+                  y += 4;
+                });
+              });
+              y += 2;
+            });
+            y += 3;
+          }
         }
       }
 
@@ -1343,7 +1391,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
         doc.setFontSize(7);
         doc.setTextColor(100, 100, 100);
         doc.setFont(undefined, 'normal');
-        doc.text('Generado por Sistema de Monitoreo Climatico - Climetrica', pageWidth / 2, pageHeight - 10, { align: 'center' });
+        doc.text('Generado por Pulso Productivo (antes Climetrica)', pageWidth / 2, pageHeight - 10, { align: 'center' });
 
         doc.setFontSize(8);
         doc.text(`Pagina ${i} de ${pageCount}`, pageWidth / 2, pageHeight - 6, { align: 'center' });
@@ -1357,6 +1405,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
         console.log('✅ Restaurando vista de detalles...');
         setShowMap(false);
       }
+      if (tabOriginal !== 'detalles') setActiveTab(tabOriginal);
     } catch (error) {
       console.error('Error generando PDF:', error);
       alert('Error al generar el PDF. Por favor intente nuevamente.');
@@ -1365,6 +1414,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
       if (wasMapHidden) {
         setShowMap(false);
       }
+      if (tabOriginal !== 'detalles') setActiveTab(tabOriginal);
     } finally {
       document.body.removeChild(loadingDiv);
     }
@@ -1570,11 +1620,21 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                   🌾 Análisis de Cultivo
                 </button>
               )}
+              <button
+                className={`${styles.tabButton} ${activeTab === 'misDatos' ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab('misDatos')}
+                title="Agregar tus propios datos a este registro"
+              >
+                📝 Mis datos del cultivo ＋
+              </button>
             </div>
 
-            {/* Cuerpo del modal */}
-            <div className={styles.modalBody}>
-              {/* MAPA Y SERIE TEMPORAL - SIEMPRE VISIBLE */}
+            {/* Cuerpo del modal. key={activeTab}: al cambiar de pestaña se
+                vuelve a montar, arranca desde arriba y se anima la entrada,
+                así se nota el cambio de contenido. */}
+            <div className={`${styles.modalBody} ${styles.tabPanel}`} key={activeTab}>
+              {/* MAPA Y SERIE TEMPORAL - solo en la pestaña de Detalles */}
+              {activeTab === 'detalles' && (
               <div className={styles.modalMapLayout}>
                   {/* Sección del Mapa */}
                   <div className={styles.modalMapSection}>
@@ -1742,8 +1802,20 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                     </div>
                   )}
                 </div>
+              )}
 
               {/* PESTAÑAS DE CONTENIDO */}
+              {activeTab === 'misDatos' && (
+                <div className={styles.modalSection}>
+                  <CropRecordForm
+                    key={modalData._id}
+                    recordId={modalData._id}
+                    userId={modalData.userId}
+                    cultivo={modalData.cropAnalysis?.cultivo}
+                  />
+                </div>
+              )}
+
               {activeTab === 'detalles' && (
                 <>
               {/* INFORMACIÓN COMPLETA DESPUÉS DEL MAPA */}
@@ -2122,6 +2194,12 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                           </li>
                         ))}
                       </ul>
+                      <RiskActions
+                        acciones={modalData.cropAnalysis.accionesRiesgo}
+                        riesgos={modalData.cropAnalysis.riesgos}
+                        lat={modalData.cropAnalysis.ubicacion?.lat ?? modalData.cropAnalysis.ubicacion?.latitud ?? modalData.latitud}
+                        lng={modalData.cropAnalysis.ubicacion?.lng ?? modalData.cropAnalysis.ubicacion?.longitud ?? modalData.longitud}
+                      />
                     </div>
                   )}
 

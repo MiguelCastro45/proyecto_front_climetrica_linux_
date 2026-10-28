@@ -33,6 +33,13 @@ import "../styles/UserMapDashboard.css";
 import PolygonDrawer from './PolygonDrawer';
 import { saveClimateData } from '../api/Save_climate_data_helper';
 import AnimatedLayerOverlay from '../components/AnimatedLayer';
+import { ACTORES } from '../config/actores';
+import { ACTORES_SIMULADOS, CAUCA_CENTER, CAUCA_ZOOM } from '../config/actoresSimulados';
+import { generarAccionesRiesgo } from '../config/accionesRiesgo';
+import RiskActions from '../components/RiskActions';
+import { VARIABLES_MERCADO, variablesMercadoParaCultivo } from '../config/variablesMercado';
+import { LIMITE_CAUCA } from '../config/limiteCauca';
+import MarketPanel from '../components/MarketPanel';
 
 
 // ============================================================================
@@ -275,6 +282,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   const modalCanvasRef = useRef(null);    // Canvas del modal ampliado
   const timeSeriesChartRef = useRef(null); // Gráfico de series temporales
   const tooltipRef = useRef(null);        // Tooltip del mapa
+  const actoresLayerRef = useRef(null);   // Capa de puntos de otros usuarios (red)
 
   // ========================================
   // ESTADOS (useState)
@@ -313,6 +321,16 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   // Cargar capas desde el backend
   const [layerDefs, setLayerDefs] = useState(LAYER_DEFS);
   const [loadingLayers, setLoadingLayers] = useState(true);
+
+  // Red de actores (otros usuarios simulados): qué tipos se muestran
+  const [actoresVisibles, setActoresVisibles] = useState(
+    () => Object.fromEntries(Object.keys(ACTORES).map((k) => [k, true]))
+  );
+  const [leyendaActoresAbierta, setLeyendaActoresAbierta] = useState(true);
+  const [resaltarCauca, setResaltarCauca] = useState(true);
+
+  // Variable de mercado seleccionada ('' = ninguna)
+  const [mercadoVar, setMercadoVar] = useState('');
 
   // ========================================
   // FECHAS POR DEFECTO: Hoy y hace 7 días
@@ -373,6 +391,28 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   const [cultivoSeleccionado, setCultivoSeleccionado] = useState("Café");
   const [cropAnalysisData, setCropAnalysisData] = useState(null);
   const [activeModalTab, setActiveModalTab] = useState('clima'); // 'clima' o 'cultivos'
+
+  // Variables de mercado disponibles según el cultivo elegido
+  const mercadoCultivo = variablesMercadoParaCultivo(cultivoSeleccionado);
+
+  // Al cambiar de cultivo, si la variable de mercado elegida no aplica al
+  // nuevo cultivo (y no es general), se limpia para no mostrar un precio ajeno.
+  function handleCultivoChange(nuevoCultivo) {
+    setCultivoSeleccionado(nuevoCultivo);
+    const nuevas = variablesMercadoParaCultivo(nuevoCultivo);
+    if (mercadoVar && !nuevas.delCultivo.includes(mercadoVar) && !nuevas.generales.includes(mercadoVar)) {
+      setMercadoVar('');
+    }
+  }
+
+  function renderOpcionMercado(clave) {
+    const v = VARIABLES_MERCADO[clave];
+    return (
+      <option key={clave} value={clave}>
+        {v.icono} {v.nombre}{v.perfiles.includes(currentUser?.role) ? ' ★' : ''}
+      </option>
+    );
+  }
 
   /**
    * EFECTO: Actualizar información del usuario cuando cambia
@@ -1696,7 +1736,9 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     // Cerrar y eliminar todos los popups
     map.closePopup();
     map.eachLayer((layer) => {
-      // No eliminar las capas base (TileLayer)
+      // No eliminar las capas base (TileLayer), los puntos de la red de actores
+      // ni el resaltado del Cauca
+      if (layer.options?.esActor || layer.options?.esFijo) return;
       if (layer instanceof L.Marker || layer instanceof L.Popup || layer instanceof L.Polygon || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
         map.removeLayer(layer);
       }
@@ -2311,6 +2353,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     );
 
     const aptitudTotal = (aptitudTemp + aptitudPrec + aptitudAlt) / 3;
+    const riesgos = evaluarRiesgos(datosClimaticos, cultivo);
 
     return {
       cultivo: cultivoSeleccionado,
@@ -2328,7 +2371,8 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         total: aptitudTotal
       },
       recomendacion: getRecomendacion(aptitudTotal),
-      riesgos: evaluarRiesgos(datosClimaticos, cultivo),
+      riesgos,
+      accionesRiesgo: generarAccionesRiesgo(riesgos, latNum, lngNum),
       parametrosOptimos: {
         temperatura: `${cultivo.temperaturaOptima.min}°C - ${cultivo.temperaturaOptima.max}°C`,
         precipitacion: `${cultivo.precipitacionOptima.min} - ${cultivo.precipitacionOptima.max} mm/año`,
@@ -2407,6 +2451,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             aptitudes: cropAnalysisData.aptitudes,
             recomendacion: cropAnalysisData.recomendacion,
             riesgos: cropAnalysisData.riesgos,
+            accionesRiesgo: cropAnalysisData.accionesRiesgo,
             parametrosOptimos: cropAnalysisData.parametrosOptimos,
             ciclosAgricolas: cropAnalysisData.ciclosAgricolas
           } : null
@@ -2483,6 +2528,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             aptitudes: cropAnalysisData.aptitudes,
             recomendacion: cropAnalysisData.recomendacion,
             riesgos: cropAnalysisData.riesgos,
+            accionesRiesgo: cropAnalysisData.accionesRiesgo,
             parametrosOptimos: cropAnalysisData.parametrosOptimos,
             ciclosAgricolas: cropAnalysisData.ciclosAgricolas
           } : null
@@ -2543,6 +2589,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           aptitudes: cropAnalysisData.aptitudes,
           recomendacion: cropAnalysisData.recomendacion,
           riesgos: cropAnalysisData.riesgos,
+          accionesRiesgo: cropAnalysisData.accionesRiesgo,
           parametrosOptimos: cropAnalysisData.parametrosOptimos,
           ciclosAgricolas: cropAnalysisData.ciclosAgricolas
         } : null
@@ -2942,6 +2989,40 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         y += 4;
       }
 
+      // Cómo subsanar los riesgos y oportunidades
+      const accionesPdf = cropAnalysisData.accionesRiesgo?.length
+        ? cropAnalysisData.accionesRiesgo
+        : generarAccionesRiesgo(cropAnalysisData.riesgos || [], cropAnalysisData.ubicacion?.lat, cropAnalysisData.ubicacion?.lng);
+      if (accionesPdf.length > 0) {
+        checkNewPage(12);
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(4, 120, 87);
+        doc.text('Como subsanar los riesgos y oportunidades:', margin + 2, y);
+        y += 5;
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(8);
+        accionesPdf.slice(0, 3).forEach(a => {
+          const cercanos = (a.insumosCercanos || []).map(p => `${p.actividad} (${p.municipio}, ${p.distanciaKm} km)`).join('; ');
+          const lineas = [
+            `${a.titulo}`,
+            `Que hacer: ${a.accion}`,
+            a.oportunidad ? `Oportunidad: ${a.oportunidad}` : null,
+            cercanos ? `Insumos cercanos: ${cercanos}` : null,
+          ].filter(Boolean);
+          lineas.forEach((texto, i) => {
+            doc.setFont(undefined, i === 0 ? 'bold' : 'normal');
+            doc.splitTextToSize(i === 0 ? `• ${texto}` : texto, contentWidth - 8).forEach(line => {
+              checkNewPage(4);
+              doc.text(line, margin + (i === 0 ? 3 : 6), y);
+              y += 3.5;
+            });
+          });
+          y += 1.5;
+        });
+        y += 3;
+      }
+
       // Parámetros Óptimos
       if (cropAnalysisData.parametrosOptimos) {
         checkNewPage(18);
@@ -3084,7 +3165,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
       doc.text(`Pagina ${i} de ${pageCount}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
       doc.setFontSize(7);
-      doc.text('Sistema de Monitoreo Climatico - Climetrica', pageWidth / 2, pageHeight - 4, { align: 'center' });
+      doc.text('Pulso Productivo (antes Climetrica) - Sistema de Monitoreo', pageWidth / 2, pageHeight - 4, { align: 'center' });
     }
 
     // Guardar PDF
@@ -3140,8 +3221,8 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     console.log('🗺️ Inicializando mapa con', Object.keys(layerDefs).length, 'capas');
 
     const map = L.map(mapContainerRef.current, {
-      center: [4.6, -74.1],  // Bogotá, Colombia
-      zoom: 5.5,
+      center: CAUCA_CENTER,  // Cauca, zona piloto de Pulso Productivo
+      zoom: 8,
       minZoom: 2,
       maxZoom: 18, // Aumentado de 10 a 18 para permitir más zoom
       maxBounds: [[-90, -180], [90, 180]], // Límites del mundo
@@ -3794,6 +3875,96 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
   /**
    * ========================================
+   * EFECTO: RED DE ACTORES (otros usuarios)
+   * ========================================
+   *
+   * Dibuja los puntos anónimos de otros usuarios de la red (datos simulados
+   * en el Cauca), con color e ícono según su tipo de actor. Se redibuja al
+   * mostrar/ocultar tipos desde la leyenda. Los marcadores llevan
+   * `esActor: true` para que "Limpiar mapa" no los borre.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (loadingLayers || !map) return;
+
+    const group = L.layerGroup();
+    ACTORES_SIMULADOS
+      .filter((a) => actoresVisibles[a.tipo])
+      .forEach((a) => {
+        const tipo = ACTORES[a.tipo];
+        // Ícono de la actividad puntual (si no tiene, el del tipo); color del tipo
+        const icono = a.icono || tipo.icono;
+        const icon = L.divIcon({
+          className: 'actor-marker',
+          html: `<div class="actor-marker-dot" style="background:${tipo.color}">${icono}</div>`,
+          iconSize: [30, 30],
+          iconAnchor: [15, 15],
+        });
+        L.marker([a.lat, a.lng], { icon, esActor: true, keyboard: false })
+          .bindTooltip(
+            `<div class="actor-tooltip">
+               <div class="actor-tooltip-title" style="color:${tipo.color}">${icono} ${a.actividad}</div>
+               <div><span class="actor-tooltip-role" style="background:${tipo.color}">${tipo.icono} ${tipo.label}</span></div>
+               <div class="actor-tooltip-sub">📍 ${a.municipio} · Afectación reportada: ${a.afectacion}</div>
+               <div class="actor-tooltip-note">Usuario anónimo · datos simulados</div>
+             </div>`,
+            { direction: 'top', offset: [0, -14] }
+          )
+          .addTo(group);
+      });
+
+    group.addTo(map);
+    actoresLayerRef.current = group;
+
+    return () => {
+      try { map.removeLayer(group); } catch (e) {}
+      actoresLayerRef.current = null;
+    };
+  }, [loadingLayers, actoresVisibles]);
+
+  /**
+   * ========================================
+   * EFECTO: RESALTAR EL DEPARTAMENTO DEL CAUCA (zona piloto)
+   * ========================================
+   *
+   * Dibuja el contorno del Cauca y atenúa levemente el resto del mapa
+   * (máscara con el Cauca como "hueco"). Va en un pane propio por encima de
+   * las capas climáticas y no recibe clics, para no interferir con el mapa.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (loadingLayers || !map || !resaltarCauca) return;
+
+    if (!map.getPane('caucaPane')) {
+      const pane = map.createPane('caucaPane');
+      pane.style.zIndex = 670;
+      pane.style.pointerEvents = 'none';
+    }
+
+    const mundo = [[-90, -180], [-90, 180], [90, 180], [90, -180]];
+    const mascara = L.polygon([mundo, ...LIMITE_CAUCA], {
+      pane: 'caucaPane', interactive: false, esFijo: true,
+      stroke: false, fillColor: '#0f172a', fillOpacity: 0.18,
+    });
+    const contorno = L.polygon(LIMITE_CAUCA, {
+      pane: 'caucaPane', interactive: false, esFijo: true,
+      color: '#23206f', weight: 3, dashArray: '8 6', fill: false,
+    });
+    const etiqueta = L.tooltip({
+      permanent: true, direction: 'center', className: 'cauca-label', pane: 'caucaPane',
+    }).setLatLng([2.0, -77.15]).setContent('Cauca · zona piloto');
+
+    mascara.addTo(map);
+    contorno.addTo(map);
+    etiqueta.addTo(map);
+
+    return () => {
+      [mascara, contorno, etiqueta].forEach((l) => { try { map.removeLayer(l); } catch (e) {} });
+    };
+  }, [loadingLayers, resaltarCauca]);
+
+  /**
+   * ========================================
    * EFECTO: CLICK EN EL MAPA
    * ========================================
    *
@@ -4005,19 +4176,15 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         />
       </div>
 
-      {/* Banner de estado de datos (tiempo real o histórico) */}
-      {dataTimestamp && (
-        <div className={`data-status-banner ${isDataLive() ? 'live' : 'historical'}`}>
-          <div className="data-status-main">{getDataStatusMessage()}</div>
-          <div className="data-status-sub">Variable: {activeVar}</div>
-        </div>
-      )}
-
       {/* ========================================
-          PANEL DE CONTROLES
+          PANEL DE CONTROLES + BANNER + PANEL DE MERCADO
+          Apilados en una sola columna para que, si la barra pasa a dos
+          líneas en pantallas pequeñas, lo de abajo baje con ella.
           ======================================== */}
-      <div className="um-var-selector">
+      <div className="um-top-stack">
+      <div className="um-var-selector um-bar">
         {/* Input de búsqueda de lugares */}
+        <div className="um-ctrl um-ctrl-search">
         <label className="control-label">Lugar</label>
         <div className="search-container">
           <input
@@ -4043,8 +4210,10 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             }}
           />
         </div>
+        </div>
 
         {/* Selector de variable climática */}
+        <div className="um-ctrl">
         <label className="control-label">Variable</label>
         <select
           className="control-select"
@@ -4053,13 +4222,15 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         >
           {Object.keys(layerDefs).map((k) => <option key={k} value={k}>{k}</option>)}
         </select>
+        </div>
 
-        {/* Selector de cultivo */}
-        <label className="control-label">EscogeCultivo</label>
+        {/* Selector de cultivo (va antes de Mercado: el mercado depende del cultivo) */}
+        <div className="um-ctrl">
+        <label className="control-label">Cultivo</label>
         <select
           className="control-select"
           value={cultivoSeleccionado}
-          onChange={(e) => setCultivoSeleccionado(e.target.value)}
+          onChange={(e) => handleCultivoChange(e.target.value)}
           title="Selecciona un cultivo para análisis de aptitud"
         >
           {Object.keys(CULTIVOS).map((cultivo) => (
@@ -4068,9 +4239,32 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             </option>
           ))}
         </select>
+        </div>
+
+        {/* Selector de variable de mercado (datos de ejemplo), según el cultivo */}
+        <div className="um-ctrl">
+        <label className="control-label">Mercado</label>
+        <select
+          className="control-select"
+          value={mercadoVar}
+          onChange={(e) => setMercadoVar(e.target.value)}
+          title={`Variables de mercado para ${cultivoSeleccionado} (datos de ejemplo)`}
+        >
+          <option value="">— Ninguna —</option>
+          {mercadoCultivo.delCultivo.length > 0 && (
+            <optgroup label={`${CULTIVOS[cultivoSeleccionado]?.icono || ''} ${cultivoSeleccionado}`}>
+              {mercadoCultivo.delCultivo.map(renderOpcionMercado)}
+            </optgroup>
+          )}
+          <optgroup label="Generales de la región">
+            {mercadoCultivo.generales.map(renderOpcionMercado)}
+          </optgroup>
+        </select>
+        </div>
 
         {/* Selector de fecha inicio */}
-        <label className="control-label">Fecha Inicio</label>
+        <div className="um-ctrl um-ctrl-date">
+        <label className="control-label">Inicio</label>
         <input
           type="date"
           className="date-input"
@@ -4078,9 +4272,11 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           onChange={(e) => handleDateRangeChange(e.target.value, endDate)}
           max={endDate || undefined}
         />
+        </div>
 
         {/* Selector de fecha fin */}
-        <label className="control-label">Fecha Fin</label>
+        <div className="um-ctrl um-ctrl-date">
+        <label className="control-label">Fin</label>
         <input
           type="date"
           className="date-input"
@@ -4088,7 +4284,35 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           onChange={(e) => handleDateRangeChange(startDate, e.target.value)}
           min={startDate || undefined}
         />
+        </div>
 
+      </div>
+
+      {/* Fila bajo la barra: panel de mercado (izq.) y banner de estado (centro) */}
+      <div className="um-top-row">
+        {mercadoVar && (
+          <MarketPanel
+            clave={mercadoVar}
+            role={currentUser?.role}
+            onClose={() => setMercadoVar('')}
+          />
+        )}
+
+        {/* Banner de estado de datos: aparece al cambiar de variable o cuando
+            los datos pasan de en vivo a históricos (o al revés), y se oculta
+            solo a los pocos segundos (animación CSS). No depende de la hora de
+            cada consulta: pasar el mouse por el mapa consulta valores y no
+            debe volver a mostrarlo. */}
+        {dataTimestamp && (
+          <div
+            key={`${activeVar}-${isDataLive() ? 'live' : 'hist'}`}
+            className={`data-status-banner ${isDataLive() ? 'live' : 'historical'}`}
+          >
+            <div className="data-status-main">{getDataStatusMessage()}</div>
+            <div className="data-status-sub">Variable: {activeVar}</div>
+          </div>
+        )}
+      </div>
       </div>
 
       {/* ========================================
@@ -4147,6 +4371,53 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
           <div>{legend.max}</div>
         </div>
         {legendHover && <div className="um-legend-tooltip">{legendHover}</div>}
+      </div>
+
+      {/* ========================================
+          LEYENDA DE LA RED DE ACTORES (otros usuarios)
+          ======================================== */}
+      <div className={`actores-legend ${leyendaActoresAbierta ? '' : 'collapsed'}`}>
+        <button
+          className="actores-legend-header"
+          onClick={() => setLeyendaActoresAbierta(!leyendaActoresAbierta)}
+          title="Mostrar u ocultar la leyenda"
+        >
+          🤝 Red de actores <span>{leyendaActoresAbierta ? '▾' : '▸'}</span>
+        </button>
+        {leyendaActoresAbierta && (
+          <>
+            {Object.entries(ACTORES).map(([key, a]) => (
+              <label key={key} className="actores-legend-item" title={a.descripcion}>
+                <input
+                  type="checkbox"
+                  checked={actoresVisibles[key]}
+                  onChange={() => setActoresVisibles((prev) => ({ ...prev, [key]: !prev[key] }))}
+                />
+                <span className="actores-legend-dot" style={{ background: a.color }}>{a.icono}</span>
+                {a.label}
+                <span className="actores-legend-count">
+                  {ACTORES_SIMULADOS.filter((s) => s.tipo === key).length}
+                </span>
+              </label>
+            ))}
+            <label className="actores-legend-item actores-legend-cauca">
+              <input
+                type="checkbox"
+                checked={resaltarCauca}
+                onChange={() => setResaltarCauca(!resaltarCauca)}
+              />
+              <span className="actores-legend-dot actores-legend-dot-cauca" />
+              Resaltar Cauca (zona piloto)
+            </label>
+            <button
+              className="actores-legend-go"
+              onClick={() => mapRef.current?.flyTo(CAUCA_CENTER, CAUCA_ZOOM)}
+            >
+              📍 Ver red en el Cauca
+            </button>
+            <div className="actores-legend-note">Usuarios anónimos · datos simulados</div>
+          </>
+        )}
       </div>
 
       {/* ========================================
@@ -4603,6 +4874,12 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                           <li key={idx}>{riesgo}</li>
                         ))}
                       </ul>
+                      <RiskActions
+                        acciones={cropAnalysisData.accionesRiesgo}
+                        riesgos={cropAnalysisData.riesgos}
+                        lat={cropAnalysisData.ubicacion?.lat}
+                        lng={cropAnalysisData.ubicacion?.lng}
+                      />
                     </div>
                   )}
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import API from "../api/api";
 import { handleAPIError } from "../utils/errorHandler";
 import "../styles/ForgotPassword.css";
+import BrandHeader from "../components/BrandHeader";
 import { useNavigate } from "react-router-dom";
 
 export default function ForgotPassword() {
@@ -133,6 +134,7 @@ export default function ForgotPassword() {
   return (
     <div className="forgot-container">
       <div className="forgot-card">
+        <BrandHeader size="lg" />
         <h2 className="forgot-title">Recuperar contraseña</h2>
         <form onSubmit={handleReset}>
           <div className="input-group input-with-icon">

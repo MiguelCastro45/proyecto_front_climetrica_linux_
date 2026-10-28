@@ -18,6 +18,8 @@ import UserMapDashboard from "./UserMapDashboard";
 import AdminUsers from "../components/AdminUsers";
 import AdminVariables from "../components/AdminVariables";
 import AdminCrops from "../components/AdminCrops";
+import BrandHeader from "../components/BrandHeader";
+import { getRoleLabel } from "../config/actores";
 
 export default function UserPanel() {
   const navigate = useNavigate();
@@ -395,13 +397,7 @@ useEffect(() => {
   // Función para obtener el rol formateado
   const getUserRole = () => {
     if (!user) return '';
-    const roles = {
-      'admin': 'Administrador',
-      'productor': 'Productor',
-      'vendedor': 'Vendedor',
-      'inversionista': 'Inversionista'
-    };
-    return roles[user.role] || user.role;
+    return getRoleLabel(user.role);
   };
 
   // Función para obtener las iniciales del usuario
@@ -433,13 +429,7 @@ useEffect(() => {
       <div className="dashboard-layout">
         {/* 🔵 Lado izquierdo: perfil y acciones */}
         <div className="left-panel">
-          <div className="logo-container">
-            <img
-              src="/logo/1_img.jpg"
-              alt="Logo de Climétrica"
-              className="logo-img"
-            />
-          </div>
+          <BrandHeader size="md" />
 
           {user?.role !== "admin" && (
             <>

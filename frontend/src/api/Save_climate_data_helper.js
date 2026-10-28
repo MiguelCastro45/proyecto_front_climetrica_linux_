@@ -124,6 +124,7 @@ export async function saveClimateData(climateData, userInfo, polygonData = null)
             color: climateData.cropAnalysis.recomendacion.color
           },
           riesgos: climateData.cropAnalysis.riesgos,
+          accionesRiesgo: climateData.cropAnalysis.accionesRiesgo || [],
           parametrosOptimos: {
             temperatura: climateData.cropAnalysis.parametrosOptimos.temperatura,
             precipitacion: climateData.cropAnalysis.parametrosOptimos.precipitacion,

@@ -472,7 +472,18 @@
   background: #fff;
   color: #3B5998;
   border-bottom: 3px solid #3B5998;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: inset 0 -3px 0 #3B5998, 0 -2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Contenido de la pestaña: entra con una animación corta al cambiar */
+.tabPanel {
+  animation: tabPanelIn 0.25s ease-out;
+}
+
+@keyframes tabPanelIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================================

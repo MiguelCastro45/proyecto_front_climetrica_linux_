@@ -42,9 +42,7 @@ Se ha completado la documentación exhaustiva del proyecto Climétrica, incluyen
 | DOCUMENTACION_CODIGO.md | 10 KB | ✅ Existente |
 | ESTRUCTURA_PROYECTO.md | 9 KB | ✅ Existente |
 | SISTEMA_ANIMACIONES.md | 7.6 KB | ✅ Existente |
-| INTEGRACION_IA_CULTIVOS.md | 15 KB | ✅ Existente |
 | COMO_AGREGAR_VARIABLES.md | 7.2 KB | ✅ Existente |
-| README_IA.md | 5.6 KB | ✅ Existente |
 | backend/CONFIGURACION_CORREO.md | - | ✅ Existente |
 | frontend/MANEJO_ERRORES.md | - | ✅ Existente |
 
@@ -181,7 +179,6 @@ Registros de consultas climáticas de usuarios con series temporales y estadíst
 
 #### Nivel 4: Características Específicas
 - **SISTEMA_ANIMACIONES.md** - Mapas y animaciones
-- **INTEGRACION_IA_CULTIVOS.md** - IA para cultivos
 - **COMO_AGREGAR_VARIABLES.md** - Agregar variables
 - **SEGURIDAD_ENCRIPTACION.md** - Seguridad
 
@@ -307,7 +304,7 @@ Registros de consultas climáticas de usuarios con series temporales y estadíst
 - Arquitectura de 3 capas
 - Flujo de autenticación
 - Flujo de consulta climática
-- Flujo de análisis con IA
+- Flujo de análisis de cultivos
 - Diagrama de componentes
 - Diagrama de despliegue
 
@@ -315,7 +312,6 @@ Registros de consultas climáticas de usuarios con series temporales y estadíst
 - OpenWeatherMap
 - NASA POWER
 - Open-Meteo
-- Groq (Mixtral)
 - Leaflet/OSM
 - Nominatim
 
@@ -361,7 +357,6 @@ Registros de consultas climáticas de usuarios con series temporales y estadíst
 
 ### Características
 - ✅ Sistema de animaciones (capas WMTS/WMS)
-- ✅ Integración IA (Groq/Mixtral)
 - ✅ Sistema de encriptación (AES-256)
 - ✅ Manejo de errores
 - ✅ Configuración de email
@@ -419,7 +414,6 @@ Registros de consultas climáticas de usuarios con series temporales y estadíst
 
 ### Características
 - [x] Sistema de animaciones
-- [x] Integración IA
 - [x] Seguridad y encriptación
 - [x] Email y notificaciones
 - [x] Manejo de errores

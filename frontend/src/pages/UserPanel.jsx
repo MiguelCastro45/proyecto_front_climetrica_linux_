@@ -19,6 +19,7 @@ import AdminUsers from "../components/AdminUsers";
 import AdminVariables from "../components/AdminVariables";
 import AdminCrops from "../components/AdminCrops";
 import BrandHeader from "../components/BrandHeader";
+import PasswordInput from "../components/PasswordInput";
 import { getRoleLabel } from "../config/actores";
 
 export default function UserPanel() {
@@ -646,21 +647,19 @@ useEffect(() => {
                 <div className="password-section">
                   <h5>Cambiar contraseña (opcional)</h5>
 
-                  <input
+                  <PasswordInput
                     name="current_password"
                     value={accountForm.current_password}
                     onChange={handleAccountChange}
                     placeholder="Contraseña actual (para verificar similitud)"
-                    type="password"
                   />
 
                   <div className="password-input-wrapper">
-                    <input
+                    <PasswordInput
                       name="new_password"
                       value={accountForm.new_password}
                       onChange={handleAccountChange}
                       placeholder="Nueva contraseña"
-                      type="password"
                     />
 
                     {accountForm.new_password && (
@@ -697,12 +696,11 @@ useEffect(() => {
                     )}
                   </div>
 
-                  <input
+                  <PasswordInput
                     name="confirm_password"
                     value={accountForm.confirm_password}
                     onChange={handleAccountChange}
                     placeholder="Confirmar nueva contraseña"
-                    type="password"
                   />
                 </div>
 

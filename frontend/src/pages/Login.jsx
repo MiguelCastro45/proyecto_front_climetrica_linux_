@@ -16,6 +16,7 @@ import CryptoJS from "crypto-js";
 import { handleAPIError } from "../utils/errorHandler";
 import "../styles/Login.css";
 import BrandHeader from "../components/BrandHeader";
+import PasswordInput from "../components/PasswordInput";
 
 
 
@@ -160,8 +161,7 @@ export default function Login() {
           </div>
           <div className="input-with-icon">
             <img src="/iconos/lock.png" alt="Password" className="input-icon" />
-            <input
-              type="password"
+            <PasswordInput
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

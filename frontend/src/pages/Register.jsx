@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { handleAPIError } from "../utils/errorHandler";
 import "../styles/register.css";
 import BrandHeader from "../components/BrandHeader";
+import PasswordInput from "../components/PasswordInput";
 import { ACTORES } from "../config/actores";
 
 export default function Register() {
@@ -339,8 +340,7 @@ export default function Register() {
 
         <div className="input-group full-width">
           <div className="password-input-wrapper">
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               placeholder="Contraseña"
               value={form.password}

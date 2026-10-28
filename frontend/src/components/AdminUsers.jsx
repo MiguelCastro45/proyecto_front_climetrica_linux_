@@ -11,6 +11,7 @@ import React, { useState, useEffect } from "react";
 import API from "../api/api";
 import "../styles/AdminTabsEncapsulated.css?v=11";
 import { ACTORES, getRoleLabel } from "../config/actores";
+import PasswordInput from "./PasswordInput";
 
 export default function AdminUsers({ showNotification }) {
   const [users, setUsers] = useState([]);
@@ -529,8 +530,7 @@ export default function AdminUsers({ showNotification }) {
 
                 <div className="form-group">
                   <label>Contraseña {!editingUser && "*"}</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     name="password"
                     value={form.password}
                     onChange={handleChange}

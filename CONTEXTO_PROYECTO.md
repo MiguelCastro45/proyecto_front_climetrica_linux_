@@ -71,9 +71,32 @@ clave para no romper cuentas existentes), `comercializador`, `servicios`. Los ro
 
 ## 5. Configurar el proyecto en otro equipo
 
+### Forma rápida: `instalar_equipo.ps1`
+Hace todo lo de esta sección con las **mismas versiones** del equipo original
+(Git 2.55.0.2, Node.js 24.18.0, Python 3.14.3, MongoDB 7.0.28, dependencias del backend de
+`backend/requirements-lock.txt` y del frontend de `frontend/package-lock.json`).
+Se puede ejecutar varias veces sin duplicar nada.
+
+1. Clonar el repositorio (5.2) y, si se tiene, dejar el paquete privado
+   `Traspaso_PulsoProductivo.zip` en el Escritorio.
+2. Abrir **PowerShell como Administrador** en la carpeta del proyecto y ejecutar:
+   ```powershell
+   Set-ExecutionPolicy -Scope Process Bypass -Force
+   .\instalar_equipo.ps1
+   ```
+3. Si dice que no encuentra `node` o `python` justo después de instalarlos, cerrar PowerShell,
+   abrirlo de nuevo (como Administrador) y volver a ejecutar el script.
+
+Los pasos 5.1 a 5.6 explican lo mismo a mano.
+
 ### 5.1 Programas
-Git, VS Code, **Node.js 24**, **Python 3.14** (con "Add to PATH") y **MongoDB Community 7**
-instalado como servicio.
+| Programa | Versión | Nota |
+|----------|---------|------|
+| Git | 2.55.0 | |
+| VS Code | 1.143 o superior | |
+| Node.js | 24.18.0 (npm 11.16) | |
+| Python | 3.14.3 | Marcar "Add python to PATH" |
+| MongoDB Community Server | 7.0.28 | Instalar como servicio |
 
 ### 5.2 Clonar en la rama de trabajo
 ```powershell
@@ -90,10 +113,10 @@ coincidir entre equipos (`ENCRYPTION_KEY` / `REACT_APP_ENCRYPTION_KEY`, `JWT_SEC
 cd backend
 python -m venv venv
 .\venv\Scripts\Activate.ps1      # si falla: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-pip install -r requirements.txt
+pip install -r requirements-lock.txt    # versiones exactas probadas
 
 cd ..\frontend
-npm install
+npm ci                                  # versiones exactas del package-lock.json
 ```
 
 ### 5.5 Base de datos
@@ -102,7 +125,7 @@ npm install
 ```powershell
 cd backend
 .\venv\Scripts\Activate.ps1
-python import_database.py datos_base
+python import_database.py datos_base --replace
 ```
 Los **usuarios** y los **registros guardados** no van en git (tienen correos, cédulas y
 teléfonos). Si se necesitan, se exportan en el equipo original con `python export_database.py`

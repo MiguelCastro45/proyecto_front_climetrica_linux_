@@ -1,0 +1,26 @@
+# Versiones exactas probadas (Python 3.14.3). Generado con "pip freeze" el 29/10/2026.
+# instalar_equipo.ps1 usa este archivo para que todos los equipos queden iguales.
+# requirements.txt sigue siendo la lista base sin versiones fijas.
+asgiref==3.12.1
+bcrypt==5.0.0
+certifi==2026.7.22
+Django==6.1.1
+django-cors-headers==4.9.0
+djangorestframework==3.18.0
+dnspython==2.8.0
+geopandas==1.1.4
+gunicorn==26.2.0
+numpy==2.5.2
+packaging==26.3
+pandas==3.0.5
+pycryptodome==3.23.0
+PyJWT==2.13.0
+pymongo==4.18.0
+pyogrio==0.13.0
+pyproj==3.7.2
+python-dateutil==2.9.0.post0
+python-dotenv==1.2.3
+shapely==2.1.2
+six==1.17.0
+sqlparse==0.6.0
+tzdata==2026.3

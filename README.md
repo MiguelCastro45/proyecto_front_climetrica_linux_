@@ -100,6 +100,7 @@ Ver [ESTRUCTURA_PROYECTO.md](ESTRUCTURA_PROYECTO.md) para más detalles.
 
 ### Documentación Principal
 
+- **[Contexto del Proyecto](CONTEXTO_PROYECTO.md)** - Pulso Productivo: estado del trabajo, decisiones y cómo configurarlo en otro equipo
 - **[Guía de Instalación](GUIA_INSTALACION.md)** - Instalación paso a paso del sistema completo
 - **[Arquitectura del Sistema](ARQUITECTURA_SISTEMA.md)** - Diseño y arquitectura del proyecto
 - **[Estructura del Proyecto](ESTRUCTURA_PROYECTO.md)** - Organización de archivos y directorios

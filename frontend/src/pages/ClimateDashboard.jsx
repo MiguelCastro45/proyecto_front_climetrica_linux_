@@ -562,6 +562,29 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
   };
 
   /**
+   * Espera a que se cumpla `condicion` revisando cada 100 ms, hasta `maximoMs`.
+   * Reemplaza esperas de tiempo fijo: si todo está listo antes, sigue de una vez.
+   */
+  const esperarHasta = async (condicion, maximoMs) => {
+    const inicio = Date.now();
+    while (Date.now() - inicio < maximoMs) {
+      if (condicion()) return true;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return false;
+  };
+
+  /** true cuando ninguna capa de mosaicos del mapa está descargando imágenes. */
+  const mapaTerminoDeCargar = (map, mapElement) => {
+    let cargando = false;
+    map.eachLayer((layer) => {
+      if (typeof layer.isLoading === 'function' && layer.isLoading()) cargando = true;
+    });
+    const pendientes = mapElement.querySelectorAll('img.leaflet-tile:not(.leaflet-tile-loaded)').length;
+    return !cargando && pendientes === 0;
+  };
+
+  /**
    * FUNCIÓN: Capturar snapshot del mapa como imagen
    * Usa dom-to-image-more para capturar capas WMTS correctamente (incluyendo tiles cross-origin)
    */
@@ -577,10 +600,15 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
       // Invalidar el tamaño del mapa para asegurar renderizado correcto
       map.invalidateSize();
 
-      // Esperar a que todas las capas se carguen completamente
-      // Tiempo extendido para capas WMTS de NASA GIBS
+      // Esperar a que terminen de cargar los mosaicos (máximo 4 s, para capas
+      // lentas como NASA GIBS). Antes era una espera fija de 4 s aunque el
+      // mapa ya estuviera listo, y el PDF tardaba ~4,7 s.
       console.log('⏳ Esperando carga de capas climáticas...');
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      await new Promise(resolve => setTimeout(resolve, 150)); // deja arrancar las descargas
+      await esperarHasta(() => mapaTerminoDeCargar(map, mapElement), 4000);
+      // Los mosaicos aparecen con un desvanecido de ~0,2 s: sin esta pausa
+      // el mapa sale pálido en el PDF
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       console.log('📸 Capturando mapa con dom-to-image-more...');
 
@@ -842,8 +870,8 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
         console.log('⚠️ Activando vista de mapa para captura...');
         setShowMap(true);
         setActiveTab('detalles');
-        // Esperar a que React renderice el mapa y el gráfico
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        // Esperar a que React renderice el mapa y el gráfico (máximo 1,2 s)
+        await esperarHasta(() => mapRef.current && modalCanvasRef.current, 1200);
       }
 
       const doc = new jsPDF();

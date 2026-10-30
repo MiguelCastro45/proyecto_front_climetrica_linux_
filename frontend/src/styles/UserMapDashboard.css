@@ -3945,36 +3945,69 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
-/* Botón de animación de la variable, encima del botón de mapa base */
+/* Botón de animación de la variable: a la derecha del botón de mapa base,
+   mismo tamaño y estilo. Activo: ondas en movimiento y acento azul. */
 .map-anim-button {
   position: absolute;
-  bottom: 168px;
-  left: 15px;
+  bottom: 120px;
+  left: 63px;
   z-index: 1500;
+  width: 40px;
   height: 40px;
-  min-width: 40px;
-  padding: 0 10px;
+  padding: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.644);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 2px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
-  color: #333;
-  font-size: 12px;
-  font-weight: 600;
+  color: #94a3b8;
   cursor: pointer;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 
 .map-anim-button:hover {
   background: rgba(248, 248, 248, 1);
+  transform: translateY(-1px);
+}
+
+.map-anim-button:active {
+  transform: scale(0.94);
 }
 
 .map-anim-button.activa {
   color: #2563eb;
-  border-color: rgba(37, 99, 235, 0.5);
+  border-color: rgba(37, 99, 235, 0.45);
+}
+
+.map-anim-button .onda {
+  transition: opacity 0.2s ease;
+}
+
+.map-anim-button:not(.activa) .onda {
+  opacity: 0.6;
+}
+
+.map-anim-button.activa .onda {
+  animation: map-anim-onda 1.4s ease-in-out infinite;
+}
+
+.map-anim-button.activa .onda-2 { animation-delay: 0.15s; }
+.map-anim-button.activa .onda-3 { animation-delay: 0.3s; }
+
+@keyframes map-anim-onda {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(2px); }
+}
+
+.map-anim-button .tachado {
+  stroke: #64748b;
+  stroke-width: 2.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-anim-button.activa .onda { animation: none; }
 }

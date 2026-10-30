@@ -72,7 +72,8 @@ clave para no romper cuentas existentes), `comercializador`, `servicios`. Los ro
 - **Mapas base** (todos gratuitos y sin clave): OpenStreetMap, **Oscuro** (Esri Dark Gray
   Canvas) y **Satélite detallado** (imagen de Esri con vías y nombres; hasta nivel 18 se ven
   casas y techos, más cerca se amplía esa imagen). Se quitó Voyager. Zoom máximo del mapa: 20.
-- **Botón "Animación"** sobre el mapa (encima del botón de mapa base): activa o detiene la
+- **Botón de animación** sobre el mapa (a la derecha del botón de mapa base, ícono de ondas que
+  se mueven cuando está activa; gris y tachado cuando está detenida): activa o detiene la
   animación de colores de la variable. El navegador recuerda la elección.
 - **Limpieza:** se eliminó un módulo sin uso que llamaba a un servicio externo de análisis
   (nunca estuvo conectado) junto con su documentación y estilos.

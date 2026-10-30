@@ -36,7 +36,7 @@ import AnimatedLayerOverlay from '../components/AnimatedLayer';
 import { ACTORES, getRoleLabel } from '../config/actores';
 import { ubicacionSimulada } from '../config/ubicacionUsuario';
 import { ALERTAS_VIAS, ESTADOS_VIA } from '../config/estadoVias';
-import { ACTORES_SIMULADOS, CAUCA_CENTER, CAUCA_ZOOM } from '../config/actoresSimulados';
+import { ACTORES_SIMULADOS, CAUCA_CENTER, CAUCA_ZOOM, distanciaKm } from '../config/actoresSimulados';
 import { generarAccionesRiesgo } from '../config/accionesRiesgo';
 import RiskActions from '../components/RiskActions';
 import { VARIABLES_MERCADO, variablesMercadoParaCultivo } from '../config/variablesMercado';
@@ -373,6 +373,13 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   // Ubicación simulada del usuario (siempre la misma para la misma cuenta)
   const miUbicacion = useMemo(() => ubicacionSimulada(currentUser), [currentUser]);
   const miMarcadorRef = useRef(null);
+
+  /** Línea "A X km de ti" para los globos de los puntos (distancia en línea recta). */
+  function lineaDistancia(lat, lng) {
+    const km = distanciaKm(miUbicacion.lat, miUbicacion.lng, lat, lng);
+    const texto = km < 10 ? km.toFixed(1).replace('.', ',') : Math.round(km);
+    return '<div class="actor-tooltip-dist">📏 A ' + texto + ' km de ti <span>(en línea recta)</span></div>';
+  }
 
   // Variable de mercado seleccionada ('' = ninguna)
   const [mercadoVar, setMercadoVar] = useState('');
@@ -3951,6 +3958,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                <div class="actor-tooltip-title" style="color:${tipo.color}">${icono} ${a.actividad}</div>
                <div><span class="actor-tooltip-role" style="background:${tipo.color}">${tipo.icono} ${tipo.label}</span></div>
                <div class="actor-tooltip-sub">📍 ${a.municipio} · Afectación reportada: ${a.afectacion}</div>
+               ${lineaDistancia(a.lat, a.lng)}
                <div class="actor-tooltip-note">Usuario anónimo · datos simulados</div>
              </div>`,
             { direction: 'top', offset: [0, -14] }
@@ -3965,7 +3973,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       try { map.removeLayer(group); } catch (e) {}
       actoresLayerRef.current = null;
     };
-  }, [loadingLayers, actoresVisibles]);
+  }, [loadingLayers, actoresVisibles, miUbicacion]);
 
   /**
    * ========================================
@@ -4057,6 +4065,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
              <div class="actor-tooltip-title" style="color:${estado.color}">⚠️ ${v.tipo} · ${estado.label}</div>
              <div><strong>${v.via}</strong></div>
              <div class="actor-tooltip-sub">${v.sector} · ${v.hace}</div>
+             ${lineaDistancia(v.lat, v.lng)}
              <div class="actor-tooltip-sub">${v.detalle}</div>
              <div class="actor-tooltip-note">Reporte simulado</div>
            </div>`,
@@ -4077,7 +4086,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       contenedor.classList.remove('vias-zoom-cerca');
       try { map.removeLayer(group); } catch (e) {}
     };
-  }, [loadingLayers, mostrarVias]);
+  }, [loadingLayers, mostrarVias, miUbicacion]);
 
   /**
    * ========================================

@@ -57,6 +57,8 @@ clave para no romper cuentas existentes), `comercializador`, `servicios`. Los ro
   marcador propio (anillo que pulsa, etiqueta "Tú", color de su perfil). Al hacer clic muestra
   nombre, lugar, municipio y coordenadas. La ubicación es **simulada** en el Cauca y siempre es la
   misma para la misma cuenta (`config/ubicacionUsuario.js`). Botón "Mi ubicación" en la leyenda.
+  Los globos de los demás puntos (actores y alertas de vías) muestran la distancia en km hasta
+  esa ubicación, en línea recta.
 - **Estado de vías:** 4 alertas simuladas (3 derrumbes y 1 inundación) con una señal de triángulo;
   el nombre ("Derrumbe", "Vía cerrada") se lee al acercarse (zoom 10 o más). Se pueden ocultar
   desde la leyenda (`config/estadoVias.js`).

@@ -4011,3 +4011,20 @@
 @media (prefers-reduced-motion: reduce) {
   .map-anim-button.activa .onda { animation: none; }
 }
+
+/* Distancia desde "Mi ubicación" dentro de los globos de los puntos */
+.actor-tooltip-dist {
+  display: inline-block;
+  margin: 3px 0 2px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #23206f;
+  font-weight: 600;
+}
+
+.actor-tooltip-dist span {
+  color: #64748b;
+  font-weight: 400;
+  font-size: 10px;
+}

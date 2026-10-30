@@ -3281,7 +3281,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     console.log('🗺️ Inicializando mapa con', Object.keys(layerDefs).length, 'capas');
 
     const map = L.map(mapContainerRef.current, {
-      center: CAUCA_CENTER,  // Cauca, zona piloto de Pulso Productivo
+      center: CAUCA_CENTER,  // el mapa abre centrado en el Cauca
       zoom: 8,
       minZoom: 2,
       maxZoom: MAP_MAX_ZOOM, // hasta nivel de vivienda (ver "Satélite detallado")
@@ -4090,7 +4090,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
   /**
    * ========================================
-   * EFECTO: RESALTAR EL DEPARTAMENTO DEL CAUCA (zona piloto)
+   * EFECTO: RESALTAR EL DEPARTAMENTO DEL CAUCA
    * ========================================
    *
    * Dibuja el contorno del Cauca y atenúa levemente el resto del mapa
@@ -4116,16 +4116,12 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       pane: 'caucaPane', interactive: false, esFijo: true,
       color: '#23206f', weight: 3, dashArray: '8 6', fill: false,
     });
-    const etiqueta = L.tooltip({
-      permanent: true, direction: 'center', className: 'cauca-label', pane: 'caucaPane',
-    }).setLatLng([2.0, -77.15]).setContent('Cauca · zona piloto');
 
     mascara.addTo(map);
     contorno.addTo(map);
-    etiqueta.addTo(map);
 
     return () => {
-      [mascara, contorno, etiqueta].forEach((l) => { try { map.removeLayer(l); } catch (e) {} });
+      [mascara, contorno].forEach((l) => { try { map.removeLayer(l); } catch (e) {} });
     };
   }, [loadingLayers, resaltarCauca]);
 
@@ -4594,7 +4590,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                 onChange={() => setResaltarCauca(!resaltarCauca)}
               />
               <span className="actores-legend-dot actores-legend-dot-cauca" />
-              Resaltar Cauca (zona piloto)
+              Resaltar Cauca
             </label>
             <button
               className="actores-legend-go"

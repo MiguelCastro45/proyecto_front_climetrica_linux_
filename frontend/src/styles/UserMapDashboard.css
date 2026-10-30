@@ -3765,6 +3765,12 @@
   max-width: calc(100vw - 32px);
 }
 
+/* Con el panel de mercado abierto, la barra pasa por encima del panel
+   lateral de la consulta (z-index 3000), sin tapar las ventanas modales (4000) */
+.um-top-stack:has(.market-panel) {
+  z-index: 3500;
+}
+
 /* Flecha que une el panel con el selector */
 .um-bar .um-ctrl-mercado .market-panel::before {
   content: "";

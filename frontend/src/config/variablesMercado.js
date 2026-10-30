@@ -24,13 +24,13 @@ const INSUMOS = "SIPSA – DANE (insumos agropecuarios)";
 export const VARIABLES_MERCADO = {
   // ---------- Café ----------
   cafe_pergamino: { nombre: "Precio café pergamino seco", icono: "☕", unidad: "COP/carga 125 kg", base: 2350000, volatilidad: 0.015, fuenteFutura: FNC, perfiles: ["productor", "comercializador"] },
-  cafe_pasilla: { nombre: "Precio café pasilla", icono: "🫘", unidad: "COP/kg", base: 9200, volatilidad: 0.02, fuenteFutura: FNC, perfiles: ["productor", "comercializador"] },
+  cafe_pasilla: { nombre: "Precio café pasilla", icono: "🌰", unidad: "COP/kg", base: 9200, volatilidad: 0.02, fuenteFutura: FNC, perfiles: ["productor", "comercializador"] },
   cafe_transporte: { nombre: "Transporte de café (finca–acopio)", icono: "🚚", unidad: "COP/carga", base: 18000, volatilidad: 0.015, fuenteFutura: MINTRANSPORTE, perfiles: ["comercializador", "productor"] },
   cafe_jornal: { nombre: "Jornal de recolección de café", icono: "🧺", unidad: "COP/kg recogido", base: 1100, volatilidad: 0.01, fuenteFutura: "Comités de cafeteros", perfiles: ["productor"] },
 
   // ---------- Papa ----------
   papa_pastusa: { nombre: "Precio papa pastusa", icono: "🥔", unidad: "COP/bulto 50 kg", base: 95000, volatilidad: 0.035, fuenteFutura: SIPSA, perfiles: ["productor", "comercializador", "servicios"] },
-  papa_criolla: { nombre: "Precio papa criolla", icono: "🟡", unidad: "COP/arroba 12,5 kg", base: 32000, volatilidad: 0.04, fuenteFutura: SIPSA, perfiles: ["productor", "comercializador", "servicios"] },
+  papa_criolla: { nombre: "Precio papa criolla", icono: "🥔", unidad: "COP/arroba 12,5 kg", base: 32000, volatilidad: 0.04, fuenteFutura: SIPSA, perfiles: ["productor", "comercializador", "servicios"] },
   papa_transporte: { nombre: "Transporte de papa (finca–plaza)", icono: "🚚", unidad: "COP/bulto", base: 4500, volatilidad: 0.015, fuenteFutura: MINTRANSPORTE, perfiles: ["comercializador", "productor"] },
   papa_semilla: { nombre: "Semilla de papa certificada", icono: "🌱", unidad: "COP/bulto 50 kg", base: 120000, volatilidad: 0.01, fuenteFutura: INSUMOS, perfiles: ["proveedor_insumos", "productor"] },
 
@@ -55,7 +55,7 @@ export const VARIABLES_MERCADO = {
   cacao_fermentado: { nombre: "Prima por cacao fino fermentado", icono: "⭐", unidad: "COP/kg adicional", base: 3500, volatilidad: 0.02, fuenteFutura: "FEDECACAO", perfiles: ["productor", "comercializador"] },
 
   // ---------- Caña de azúcar ----------
-  cana_panela: { nombre: "Precio panela", icono: "🟫", unidad: "COP/kg", base: 4800, volatilidad: 0.012, fuenteFutura: SIPSA, perfiles: ["productor", "comercializador", "servicios"] },
+  cana_panela: { nombre: "Precio panela", icono: "🍯", unidad: "COP/kg", base: 4800, volatilidad: 0.012, fuenteFutura: SIPSA, perfiles: ["productor", "comercializador", "servicios"] },
   cana_tonelada: { nombre: "Precio caña en pie", icono: "🎋", unidad: "COP/tonelada", base: 165000, volatilidad: 0.01, fuenteFutura: "ASOCAÑA", perfiles: ["productor", "comercializador"] },
   cana_transporte: { nombre: "Transporte de caña a trapiche", icono: "🚚", unidad: "COP/tonelada", base: 35000, volatilidad: 0.015, fuenteFutura: MINTRANSPORTE, perfiles: ["comercializador", "productor"] },
 

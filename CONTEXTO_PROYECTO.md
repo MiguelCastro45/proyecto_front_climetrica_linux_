@@ -77,6 +77,9 @@ clave para no romper cuentas existentes), `comercializador`, `servicios`. Los ro
 - **Botón de animación** sobre el mapa (a la derecha del botón de mapa base, ícono de ondas que
   se mueven cuando está activa; gris y tachado cuando está detenida): activa o detiene la
   animación de colores de la variable. El navegador recuerda la elección.
+- **Íconos compatibles con Windows 10:** se cambiaron emojis recientes (🫘, 🪴, 🟫, 🟡) que se
+  veían como un cuadro vacío.
+- **Panel de mercado:** queda por encima del panel lateral de la consulta de un punto.
 - **Limpieza:** se eliminó un módulo sin uso que llamaba a un servicio externo de análisis
   (nunca estuvo conectado) junto con su documentación y estilos.
 

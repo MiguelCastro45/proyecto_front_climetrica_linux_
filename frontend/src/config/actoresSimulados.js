@@ -17,7 +17,7 @@ export const ACTORES_SIMULADOS = [
 
   // Proveedores de insumos
   { id: "a01", tipo: "proveedor_insumos", icono: "🧪", actividad: "Proveedor de fertilizantes", municipio: "Popayán", lat: 2.4590, lng: -76.6010, afectacion: "Media" },
-  { id: "a02", tipo: "proveedor_insumos", icono: "🪴", actividad: "Vivero de café y frutales", municipio: "Piendamó", lat: 2.6420, lng: -76.5280, afectacion: "Baja" },
+  { id: "a02", tipo: "proveedor_insumos", icono: "🌳", actividad: "Vivero de café y frutales", municipio: "Piendamó", lat: 2.6420, lng: -76.5280, afectacion: "Baja" },
   { id: "a03", tipo: "proveedor_insumos", icono: "🌱", actividad: "Semillas certificadas", municipio: "Santander de Quilichao", lat: 3.0090, lng: -76.4880, afectacion: "Media" },
   { id: "a04", tipo: "proveedor_insumos", icono: "🛠️", actividad: "Agroquímicos y herramientas", municipio: "El Bordo (Patía)", lat: 2.1150, lng: -76.9810, afectacion: "Alta" },
   { id: "a05", tipo: "proveedor_insumos", icono: "🌾", actividad: "Alimento concentrado para ganado", municipio: "Timbío", lat: 2.3500, lng: -76.6830, afectacion: "Baja" },
@@ -34,13 +34,13 @@ export const ACTORES_SIMULADOS = [
   { id: "p07", tipo: "productor", icono: "🐔", actividad: "Avicultura", municipio: "Sotará", lat: 2.2500, lng: -76.6100, afectacion: "Baja" },
   { id: "p08", tipo: "productor", icono: "🧶", actividad: "Cultivo de fique", municipio: "La Sierra", lat: 2.1800, lng: -76.7620, afectacion: "Alta" },
   { id: "p09", tipo: "productor", icono: "🥔", actividad: "Cultivo de papa", municipio: "Puracé", lat: 2.3420, lng: -76.4980, afectacion: "Media" },
-  { id: "p10", tipo: "productor", icono: "🫘", actividad: "Cultivo de café especial", municipio: "Inzá", lat: 2.5520, lng: -76.0640, afectacion: "Baja" },
+  { id: "p10", tipo: "productor", icono: "🏅", actividad: "Cultivo de café especial", municipio: "Inzá", lat: 2.5520, lng: -76.0640, afectacion: "Baja" },
 
   // Comercializadores
   { id: "c01", tipo: "comercializador", icono: "📦", actividad: "Distribución de alimentos", municipio: "Popayán", lat: 2.4380, lng: -76.6250, afectacion: "Media" },
   { id: "c02", tipo: "comercializador", icono: "🏭", actividad: "Acopio de café", municipio: "Piendamó", lat: 2.6300, lng: -76.5450, afectacion: "Baja" },
   { id: "c03", tipo: "comercializador", icono: "🚚", actividad: "Transporte de carga agrícola", municipio: "Santander de Quilichao", lat: 3.0200, lng: -76.4700, afectacion: "Media" },
-  { id: "c04", tipo: "comercializador", icono: "🟫", actividad: "Comercialización de panela", municipio: "Caloto", lat: 3.0330, lng: -76.4110, afectacion: "Alta" },
+  { id: "c04", tipo: "comercializador", icono: "🍯", actividad: "Comercialización de panela", municipio: "Caloto", lat: 3.0330, lng: -76.4110, afectacion: "Alta" },
   { id: "c05", tipo: "comercializador", icono: "❄️", actividad: "Cadena de frío (cárnicos)", municipio: "Puerto Tejada", lat: 3.2300, lng: -76.4180, afectacion: "Baja" },
   { id: "c06", tipo: "comercializador", icono: "🏪", actividad: "Plaza de mercado mayorista", municipio: "Bolívar", lat: 1.8380, lng: -76.9680, afectacion: "Alta" },
 

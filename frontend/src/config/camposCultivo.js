@@ -1,5 +1,5 @@
 /**
- * config/camposCultivo.js — Campos del formulario "Mis datos del cultivo".
+ * config/camposCultivo.js — Campos del formulario "Mis datos del sector".
  *
  * El usuario complementa cada registro con sus propios datos (árboles,
  * hectáreas, producción, ventas, afectaciones...). Los campos se ajustan al

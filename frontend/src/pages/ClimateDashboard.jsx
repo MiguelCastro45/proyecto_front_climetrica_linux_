@@ -12,6 +12,8 @@ import styles from "../styles/ClimateDashboard.module.css";
 import RiskActions from "../components/RiskActions";
 import { generarAccionesRiesgo } from "../config/accionesRiesgo";
 import CropRecordForm from "../components/CropRecordForm";
+import MarketSummary from "../components/MarketSummary";
+import { mercadoPrincipalDelSector } from "../config/variablesMercado";
 
 /**
  * Componente helper para capturar la referencia del mapa de Leaflet
@@ -1155,12 +1157,12 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
         doc.setTextColor(91, 33, 182); // Dark purple
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text('Analisis de Cultivo', margin + 3, y);
+        doc.text('Analisis del sector', margin + 3, y);
         y += 7;
 
         doc.setFontSize(10);
         doc.setTextColor(0, 0, 0);
-        doc.text(`Cultivo: ${modalData.cropAnalysis.cultivo}`, margin + 3, y);
+        doc.text(`Sector: ${modalData.cropAnalysis.cultivo}`, margin + 3, y);
         doc.text(`Nivel: ${modalData.cropAnalysis.recomendacion?.nivel || 'N/A'}`, margin + 80, y);
         y += 5;
         doc.text(`Aptitud Total: ${modalData.cropAnalysis.aptitudes?.total || 'N/A'}%`, margin + 3, y);
@@ -1483,7 +1485,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
               <th>Fecha y Hora de Descarga</th>
               <th>Lugar</th>
               <th>Variable</th>
-              <th>Cultivo</th>
+              <th>Sector</th>
               <th>Valor Actual</th>
               <th>Fuente de Datos</th>
               <th>Rango de Consulta</th>
@@ -1610,14 +1612,14 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                 className={`${styles.tabButton} ${activeTab === 'detalles' ? styles.tabActive : ''}`}
                 onClick={() => setActiveTab('detalles')}
               >
-                📊 Detalles Climáticos
+                📊 Detalles del sector
               </button>
               {modalData.cropAnalysis && modalData.cropAnalysis.cultivo && (
                 <button
                   className={`${styles.tabButton} ${activeTab === 'cultivo' ? styles.tabActive : ''}`}
                   onClick={() => setActiveTab('cultivo')}
                 >
-                  🌾 Análisis de Cultivo
+                  🌾 Análisis del sector
                 </button>
               )}
               <button
@@ -1625,7 +1627,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                 onClick={() => setActiveTab('misDatos')}
                 title="Agregar tus propios datos a este registro"
               >
-                📝 Mis datos del cultivo ＋
+                📝 Mis datos del sector ＋
               </button>
             </div>
 
@@ -1774,18 +1776,36 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                       <span className={styles.statLabel}>🌡️ Actual:</span>
                       <span className={styles.statValue}>{modalData.valorActual} {modalData.unidad}</span>
                     </div>
-                    <div className={styles.statItem}>
-                      <span className={styles.statLabel}>📈 Promedio:</span>
-                      <span className={styles.statValue}>{modalData.promedio} {modalData.unidad}</span>
-                    </div>
-                    <div className={styles.statItem}>
-                      <span className={styles.statLabel}>⬆️ Máximo:</span>
-                      <span className={styles.statValue}>{modalData.maximo} {modalData.unidad}</span>
-                    </div>
-                    <div className={styles.statItem}>
-                      <span className={styles.statLabel}>⬇️ Mínimo:</span>
-                      <span className={styles.statValue}>{modalData.minimo} {modalData.unidad}</span>
-                    </div>
+                    {/* Variables de mercado del sector (promedio, máximo y
+                        mínimo siguen abajo, en "Datos Climáticos") */}
+                    {modalData.cropAnalysis?.cultivo ? (
+                      mercadoPrincipalDelSector(modalData.cropAnalysis.cultivo, 3).map((v) => (
+                        <div className={styles.statItem} key={v.clave}>
+                          <span className={styles.statLabel}>{v.icono} {v.nombre}:</span>
+                          <span className={styles.statValue}>
+                            {v.actual.toLocaleString('es-CO')} {v.unidad}{' '}
+                            <span style={{ color: v.variacion >= 0 ? '#16a34a' : '#dc2626', fontSize: '0.85em' }}>
+                              {v.variacion >= 0 ? '▲' : '▼'} {Math.abs(v.variacion).toFixed(1)}%
+                            </span>
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className={styles.statItem}>
+                          <span className={styles.statLabel}>📈 Promedio:</span>
+                          <span className={styles.statValue}>{modalData.promedio} {modalData.unidad}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                          <span className={styles.statLabel}>⬆️ Máximo:</span>
+                          <span className={styles.statValue}>{modalData.maximo} {modalData.unidad}</span>
+                        </div>
+                        <div className={styles.statItem}>
+                          <span className={styles.statLabel}>⬇️ Mínimo:</span>
+                          <span className={styles.statValue}>{modalData.minimo} {modalData.unidad}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Sección de Serie Temporal */}
@@ -1823,7 +1843,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                 {/* Cultivo Seleccionado */}
                 {modalData.cropAnalysis && modalData.cropAnalysis.cultivo && (
                   <div className={styles.modalSection}>
-                    <h4>🌾 Cultivo Analizado</h4>
+                    <h4>🌾 Sector analizado</h4>
                     <div className={styles.modalGrid}>
                       <div className={styles.modalItem} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '2em' }}>
@@ -1978,6 +1998,9 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
                     </div>
                   </div>
 
+                  {/* Variables de mercado del sector */}
+                  <MarketSummary cultivo={modalData.cropAnalysis.cultivo} />
+
                   {/* Recomendación */}
                   <div className={styles.modalSection} style={{
                     backgroundColor: modalData.cropAnalysis.recomendacion?.color ? `${modalData.cropAnalysis.recomendacion.color}20` : '#f5f5f5',
@@ -1995,7 +2018,7 @@ export default function ClimateDashboard({ currentUser: propCurrentUser }) {
 
                   {/* Aptitudes del Cultivo */}
                   <div className={styles.modalSection}>
-                    <h4>📊 Aptitudes para el Cultivo</h4>
+                    <h4>📊 Aptitudes del sector</h4>
                     <div className={styles.aptitudesGrid}>
                       <div className={styles.aptitudCard}>
                         <div className={styles.aptitudIcon}>🌡️</div>

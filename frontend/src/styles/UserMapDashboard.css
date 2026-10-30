@@ -789,12 +789,17 @@
   background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 50%, #cbd5e0 100%);
 }
 
-.basemap-cartodb_voyager {
-  background: linear-gradient(135deg, #e8f4f8 0%, #b8d8e8 30%, #88c0d8 60%, #58a8c8 100%);
+.basemap-oscuro {
+  background:
+    linear-gradient(32deg, transparent 47%, #5b5f66 48%, #5b5f66 50%, transparent 51%),
+    linear-gradient(135deg, #1f2124 0%, #2b2e33 50%, #3a3d42 100%);
 }
 
-.basemap-esri_world {
-  background: linear-gradient(135deg, #2d5f3f 0%, #4a7c59 30%, #6b8e7d 60%, #8ba89f 100%);
+/* Satélite detallado: la misma imagen con vías y nombres encima */
+.basemap-esri_detalle {
+  background:
+    linear-gradient(28deg, transparent 46%, rgba(250, 204, 21, 0.9) 47%, rgba(250, 204, 21, 0.9) 50%, transparent 51%),
+    linear-gradient(135deg, #3b4a35 0%, #5b6b4a 35%, #7a7d62 65%, #a39f86 100%);
 }
 
 .basemap-info {
@@ -3762,3 +3767,214 @@
   100% { opacity: 0; transform: translate(-50%, -6px); visibility: hidden; }
 }
 
+
+/* Panel de mercado: se despliega justo debajo del selector "Mercado" */
+.um-bar .um-ctrl-mercado {
+  position: relative;
+}
+
+.um-bar .um-ctrl-mercado .market-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  z-index: 5;
+  max-width: calc(100vw - 32px);
+}
+
+/* Flecha que une el panel con el selector */
+.um-bar .um-ctrl-mercado .market-panel::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 70px;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  transform: rotate(45deg);
+  box-shadow: -2px -2px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================
+   MI UBICACIÓN: marcador del usuario que inició sesión
+   ============================================================ */
+.mi-ubicacion-marker {
+  background: transparent;
+  border: none;
+}
+
+.mi-ubicacion-pulso {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0.35;
+  animation: mi-ubicacion-pulso 2s ease-out infinite;
+}
+
+@keyframes mi-ubicacion-pulso {
+  0%   { transform: scale(0.5); opacity: 0.5; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.mi-ubicacion-dot {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 4px solid;
+  background: #fff;
+  box-shadow: 0 0 0 2px #fff, 0 3px 10px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.mi-ubicacion-tag {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 8px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Botón "Mi ubicación" en la leyenda */
+.actores-legend-yo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.actores-legend-yo:hover {
+  background: #eef2ff;
+}
+
+.actores-legend-yo span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.actores-legend-yo small {
+  color: #64748b;
+  font-size: 10px;
+}
+
+.actores-legend-yo .actores-legend-yo-dot {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 4px solid;
+  background: #fff;
+}
+
+/* ============================================================
+   ESTADO DE LAS VÍAS: señal de alerta sobre el mapa
+   ============================================================ */
+.via-alerta-marker {
+  background: transparent;
+  border: none;
+}
+
+.via-alerta-signo {
+  display: block;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+}
+
+/* El nombre se muestra solo al acercarse (zoom >= 10) */
+.via-alerta-label {
+  display: none;
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vias-zoom-cerca .via-alerta-label {
+  display: block;
+}
+
+.actores-legend-via {
+  flex: 0 0 auto;
+}
+
+/* Silueta de persona dentro del marcador "Tú" y perfil en una insignia */
+.mi-ubicacion-dot svg {
+  display: block;
+  margin-top: 2px;
+}
+
+.mi-ubicacion-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* Botón de animación de la variable, encima del botón de mapa base */
+.map-anim-button {
+  position: absolute;
+  bottom: 168px;
+  left: 15px;
+  z-index: 1500;
+  height: 40px;
+  min-width: 40px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.644);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  color: #333;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.map-anim-button:hover {
+  background: rgba(248, 248, 248, 1);
+}
+
+.map-anim-button.activa {
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.5);
+}

@@ -116,3 +116,22 @@ export function serieEjemplo(clave, dias = 30) {
   }
   return serie;
 }
+
+/**
+ * Resumen de una variable: valor actual y variación de los últimos 7 días
+ * (de la misma serie de ejemplo que muestra el panel de mercado).
+ */
+export function resumenMercado(clave) {
+  const v = VARIABLES_MERCADO[clave];
+  const serie = serieEjemplo(clave, 30);
+  if (!v || serie.length === 0) return null;
+  const actual = serie[serie.length - 1].value;
+  const hace7 = serie[serie.length - 8]?.value ?? serie[0].value;
+  return { clave, ...v, actual, variacion: ((actual - hace7) / hace7) * 100 };
+}
+
+/** Variables principales del sector (las del cultivo y, si faltan, generales). */
+export function mercadoPrincipalDelSector(cultivo, limite = 3) {
+  const { delCultivo, generales } = variablesMercadoParaCultivo(cultivo);
+  return [...delCultivo, ...generales].slice(0, limite).map(resumenMercado).filter(Boolean);
+}

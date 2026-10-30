@@ -1,0 +1,57 @@
+/* Variables de mercado del sector (pestaña "Análisis del sector") */
+.market-summary {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.market-summary h4 {
+  margin: 0 0 12px 0;
+}
+
+.market-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.market-summary-card {
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.market-summary-name {
+  font-size: 0.85em;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.market-summary-value {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.market-summary-value span {
+  font-size: 0.7em;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.market-summary-change {
+  font-size: 0.8em;
+  margin-top: 2px;
+}
+
+.market-summary-change.up { color: #16a34a; }
+.market-summary-change.down { color: #dc2626; }
+
+.market-summary-note {
+  margin-top: 8px;
+  font-size: 0.75em;
+  color: #94a3b8;
+}

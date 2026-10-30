@@ -1,6 +1,6 @@
 /* Panel flotante de variable de mercado */
-/* Va dentro de .um-top-row (debajo de la barra de controles), en el flujo
-   normal, para bajar junto con la barra si esta ocupa dos líneas. */
+/* Se despliega debajo del selector "Mercado" de la barra de controles
+   (posición en UserMapDashboard.css, .um-ctrl-mercado). */
 .market-panel {
   position: relative;
   width: 290px;

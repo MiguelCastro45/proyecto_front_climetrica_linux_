@@ -1109,3 +1109,23 @@
     padding: 10px 12px;
   }
 }
+/* ========================================
+   TÍTULOS SIN TEXTO RECORTADO
+   El texto con degradado (background-clip: text + fill transparente)
+   también pintaba de azul los emojis de los títulos (🗺️, 📈, 🌾...), que
+   quedaban como una mancha. Se usa un azul sólido del mismo tono para que
+   los íconos se vean con sus colores.
+   ======================================== */
+.title,
+.loading,
+.modalSection h4,
+.modalItem strong,
+.modalMapSection h4,
+.modalTimeSeriesSection h4,
+.serieValue {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: #2f5fa8;
+}

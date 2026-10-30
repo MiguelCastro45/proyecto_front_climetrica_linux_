@@ -18,7 +18,7 @@
  * Última actualización: 2025
  */
 
-import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
+import React, { useEffect, useRef, useState, useImperativeHandle, forwardRef, useMemo } from "react";
 import ReactDOM from "react-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,13 +33,16 @@ import "../styles/UserMapDashboard.css";
 import PolygonDrawer from './PolygonDrawer';
 import { saveClimateData } from '../api/Save_climate_data_helper';
 import AnimatedLayerOverlay from '../components/AnimatedLayer';
-import { ACTORES } from '../config/actores';
+import { ACTORES, getRoleLabel } from '../config/actores';
+import { ubicacionSimulada } from '../config/ubicacionUsuario';
+import { ALERTAS_VIAS, ESTADOS_VIA } from '../config/estadoVias';
 import { ACTORES_SIMULADOS, CAUCA_CENTER, CAUCA_ZOOM } from '../config/actoresSimulados';
 import { generarAccionesRiesgo } from '../config/accionesRiesgo';
 import RiskActions from '../components/RiskActions';
 import { VARIABLES_MERCADO, variablesMercadoParaCultivo } from '../config/variablesMercado';
 import { LIMITE_CAUCA } from '../config/limiteCauca';
 import MarketPanel from '../components/MarketPanel';
+import MarketSummary from '../components/MarketSummary';
 
 
 // ============================================================================
@@ -58,21 +61,59 @@ const BASE_MAPS = {
     maxZoom: 19,
     description: "Mapa estándar colaborativo"
   },
-  cartodb_voyager: {
-    name: "Voyager",
-    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    attribution: "&copy; OpenStreetMap, &copy; CartoDB",
-    maxZoom: 19,
-    description: "Estilo equilibrado entre claro y detallado"
+  // Mapa oscuro (Esri Dark Gray Canvas): gratuito y sin clave. Resalta los
+  // colores de las capas climáticas y los puntos de la red de actores.
+  oscuro: {
+    name: "Oscuro",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    capas: [
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",
+    ],
+    attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors",
+    maxZoom: 16,
+    description: "Fondo negro que resalta las capas de datos y los puntos"
   },
-  esri_world: {
-    name: "Satélite ESRI",
+  // Misma imagen satelital, con zoom hasta nivel de vivienda y encima los
+  // nombres de lugares y las vías (capas de referencia de Esri, gratuitas).
+  esri_detalle: {
+    name: "Satélite detallado",
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Tiles &copy; Esri",
+    capas: [
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+    ],
+    attribution: "Tiles &copy; Esri &mdash; Esri, Maxar, Earthstar Geographics, GIS User Community",
+    // En el Cauca la imagen llega hasta el nivel 18 (ya se ven casas y techos);
+    // al acercar más se amplía esa misma imagen en vez de mostrar "sin datos".
     maxZoom: 18,
-    description: "Imágenes satelitales de alta resolución"
+    description: "Acercamiento hasta ver casas, con vías y nombres de lugares"
   }
 };
+
+// Zoom máximo del mapa. Si un mapa base no tiene imágenes a ese nivel, se
+// amplía la última disponible (maxNativeZoom) en vez de quedar en blanco.
+const MAP_MAX_ZOOM = 20;
+
+/**
+ * Crea la capa de un mapa base: la imagen principal y, si las tiene, las
+ * capas de referencia encima (vías, nombres). Devuelve un solo grupo para
+ * poder quitarlo de una vez al cambiar de mapa base.
+ */
+function crearCapaBase(config) {
+  const opciones = {
+    attribution: config.attribution,
+    zIndex: 1,
+    noWrap: true,
+    bounds: [[-90, -180], [90, 180]],
+    maxZoom: MAP_MAX_ZOOM,
+    maxNativeZoom: config.maxZoom
+  };
+  const capas = [L.tileLayer(config.url, opciones)];
+  (config.capas || []).forEach((url) => {
+    capas.push(L.tileLayer(url, { ...opciones, attribution: '', zIndex: 2 }));
+  });
+  return L.layerGroup(capas);
+}
 
 // Mapa base por defecto
 const DEFAULT_BASE_MAP = 'osm';
@@ -328,6 +369,10 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   );
   const [leyendaActoresAbierta, setLeyendaActoresAbierta] = useState(true);
   const [resaltarCauca, setResaltarCauca] = useState(true);
+  const [mostrarVias, setMostrarVias] = useState(true);
+  // Ubicación simulada del usuario (siempre la misma para la misma cuenta)
+  const miUbicacion = useMemo(() => ubicacionSimulada(currentUser), [currentUser]);
+  const miMarcadorRef = useRef(null);
 
   // Variable de mercado seleccionada ('' = ninguna)
   const [mercadoVar, setMercadoVar] = useState('');
@@ -364,6 +409,14 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
   // ========================================
   const [selectedBaseMap, setSelectedBaseMap] = useState(DEFAULT_BASE_MAP);
   const [showBaseMapSelector, setShowBaseMapSelector] = useState(false);
+  // Animación de la variable sobre el mapa base (se recuerda en este navegador)
+  const [animacionActiva, setAnimacionActiva] = useState(() => {
+    try { return localStorage.getItem('pp_animacion_mapa') !== 'off'; } catch (e) { return true; }
+  });
+  function cambiarAnimacion(activa) {
+    setAnimacionActiva(activa);
+    try { localStorage.setItem('pp_animacion_mapa', activa ? 'on' : 'off'); } catch (e) {}
+  }
   const baseLayerRef = useRef(null);
 
   // ========================================
@@ -2910,7 +2963,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text(`Cultivo: ${cropAnalysisData.cultivo}`, margin + 2, y);
+      doc.text(`Sector: ${cropAnalysisData.cultivo}`, margin + 2, y);
       y += 5;
       doc.setFont(undefined, 'normal');
       doc.text(`Nivel de Aptitud: ${cropAnalysisData.recomendacion?.nivel || 'N/A'} (${cropAnalysisData.aptitudes?.total || 'N/A'}%)`, margin + 2, y);
@@ -3224,7 +3277,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
       center: CAUCA_CENTER,  // Cauca, zona piloto de Pulso Productivo
       zoom: 8,
       minZoom: 2,
-      maxZoom: 18, // Aumentado de 10 a 18 para permitir más zoom
+      maxZoom: MAP_MAX_ZOOM, // hasta nivel de vivienda (ver "Satélite detallado")
       maxBounds: [[-90, -180], [90, 180]], // Límites del mundo
       maxBoundsViscosity: 1.0,
       worldCopyJump: false,
@@ -3278,15 +3331,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
     map.on('zoomend', updateMapBounds);
 
     // Agregar capa base inicial
-    const baseMapConfig = BASE_MAPS[selectedBaseMap];
-    const baseLayer = L.tileLayer(baseMapConfig.url, {
-      attribution: baseMapConfig.attribution,
-      zIndex: 1,
-      noWrap: true,
-      bounds: [[-90, -180], [90, 180]],
-      maxZoom: baseMapConfig.maxZoom,
-      maxNativeZoom: baseMapConfig.maxZoom
-    }).addTo(map);
+    const baseLayer = crearCapaBase(BASE_MAPS[selectedBaseMap]).addTo(map);
 
     baseLayerRef.current = baseLayer;
 
@@ -3924,6 +3969,118 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
   /**
    * ========================================
+   * EFECTO: MI UBICACIÓN (usuario que inició sesión)
+   * ========================================
+   *
+   * Marca al usuario entre los demás puntos con un marcador distinto (anillo
+   * que pulsa y etiqueta "Tú"), del color de su tipo de actor. Al pasar el mouse
+   * muestra nombre, lugar y coordenadas con el mismo globo que los demás
+   * puntos. La ubicación es simulada (ver
+   * config/ubicacionUsuario.js).
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (loadingLayers || !map || !miUbicacion) return;
+
+    const tipo = ACTORES[currentUser?.role];
+    const color = tipo?.color || '#23206f';
+    const nombre = currentUser?.first_name
+      ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim()
+      : 'Mi cuenta';
+    const { lugar, municipio, lat, lng } = miUbicacion;
+
+    const icon = L.divIcon({
+      className: 'mi-ubicacion-marker',
+      html: `<div class="mi-ubicacion-pulso" style="background:${color}"></div>
+             <div class="mi-ubicacion-dot" style="border-color:${color}">
+               <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                 <circle cx="12" cy="7.5" r="4.5" fill="${color}"/>
+                 <path d="M3 22c0-5 4-8.5 9-8.5s9 3.5 9 8.5z" fill="${color}"/>
+               </svg>
+             </div>
+             ${tipo ? `<div class="mi-ubicacion-badge" style="background:${color}">${tipo.icono}</div>` : ''}
+             <div class="mi-ubicacion-tag" style="background:${color}">Tú</div>`,
+      iconSize: [44, 44],
+      iconAnchor: [22, 22],
+    });
+
+    const marcador = L.marker([lat, lng], { icon, esFijo: true, zIndexOffset: 1000, keyboard: false })
+      // Mismo globo que los puntos de la red de actores
+      .bindTooltip(
+        `<div class="actor-tooltip">
+           <div class="actor-tooltip-title" style="color:${color}">📍 Tú estás aquí · ${nombre}</div>
+           <div><span class="actor-tooltip-role" style="background:${color}">${tipo?.icono || '👤'} ${getRoleLabel(currentUser?.role)}</span></div>
+           <div class="actor-tooltip-sub">📍 ${lugar}, ${municipio} · Coordenadas: ${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
+           <div class="actor-tooltip-note">Tu cuenta · ubicación simulada</div>
+         </div>`,
+        { direction: 'top', offset: [0, -24] }
+      )
+      .addTo(map);
+    miMarcadorRef.current = marcador;
+
+    return () => {
+      try { map.removeLayer(marcador); } catch (e) {}
+      miMarcadorRef.current = null;
+    };
+  }, [loadingLayers, miUbicacion, currentUser]);
+
+  /**
+   * ========================================
+   * EFECTO: ESTADO DE LAS VÍAS (derrumbes, inundaciones)
+   * ========================================
+   *
+   * Pocas alertas simuladas con un ícono de señal (triángulo), más sobrio
+   * que los puntos de actores. El nombre ("Derrumbe", "Vía cerrada") se lee
+   * al acercarse (zoom >= 10), como en las apps de navegación.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (loadingLayers || !map || !mostrarVias) return;
+
+    const group = L.layerGroup();
+    ALERTAS_VIAS.forEach((v) => {
+      const estado = ESTADOS_VIA[v.estado];
+      const simbolo = v.tipo === 'Inundación' ? '≈' : '!';
+      const icon = L.divIcon({
+        className: 'via-alerta-marker',
+        html: `<svg class="via-alerta-signo" viewBox="0 0 24 22" width="24" height="22">
+                 <path d="M12 1.5 L23 20.5 H1 Z" fill="#fff8e6" stroke="${estado.color}" stroke-width="2" stroke-linejoin="round"/>
+                 <text x="12" y="17.5" text-anchor="middle" font-size="12" font-weight="700" fill="${estado.color}">${simbolo}</text>
+               </svg>
+               <span class="via-alerta-label" style="color:${estado.color}">${v.estado === 'cerrada' ? 'Vía cerrada' : v.tipo}</span>`,
+        iconSize: [24, 22],
+        iconAnchor: [12, 20],
+      });
+      L.marker([v.lat, v.lng], { icon, esFijo: true, zIndexOffset: 500, keyboard: false })
+        .bindTooltip(
+          `<div class="actor-tooltip">
+             <div class="actor-tooltip-title" style="color:${estado.color}">⚠️ ${v.tipo} · ${estado.label}</div>
+             <div><strong>${v.via}</strong></div>
+             <div class="actor-tooltip-sub">${v.sector} · ${v.hace}</div>
+             <div class="actor-tooltip-sub">${v.detalle}</div>
+             <div class="actor-tooltip-note">Reporte simulado</div>
+           </div>`,
+          { direction: 'top', offset: [0, -18] }
+        )
+        .addTo(group);
+    });
+    group.addTo(map);
+
+    // Etiquetas visibles solo al acercarse
+    const contenedor = map.getContainer();
+    const actualizar = () => contenedor.classList.toggle('vias-zoom-cerca', map.getZoom() >= 10);
+    actualizar();
+    map.on('zoomend', actualizar);
+
+    return () => {
+      map.off('zoomend', actualizar);
+      contenedor.classList.remove('vias-zoom-cerca');
+      try { map.removeLayer(group); } catch (e) {}
+    };
+  }, [loadingLayers, mostrarVias]);
+
+  /**
+   * ========================================
    * EFECTO: RESALTAR EL DEPARTAMENTO DEL CAUCA (zona piloto)
    * ========================================
    *
@@ -4078,14 +4235,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
     // Agregar nueva capa
     const baseMapConfig = BASE_MAPS[selectedBaseMap];
-    const newLayer = L.tileLayer(baseMapConfig.url, {
-      attribution: baseMapConfig.attribution,
-      zIndex: 1,
-      noWrap: true,
-      bounds: [[-90, -180], [90, 180]],
-      maxZoom: baseMapConfig.maxZoom,
-      maxNativeZoom: baseMapConfig.maxZoom
-    }).addTo(map);
+    const newLayer = crearCapaBase(baseMapConfig).addTo(map);
 
     baseLayerRef.current = newLayer;
 
@@ -4167,7 +4317,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         {/* Overlay de animación de capas con datos reales */}
         <AnimatedLayerOverlay
           activeVariable={activeVar}
-          isVisible={mapBounds !== null && activeVar !== null}
+          isVisible={animacionActiva && mapBounds !== null && activeVar !== null}
           mapBounds={mapBounds}
           tileData={currentTileData}
           legendColors={layerDefs[activeVar]?.legend?.colors || []}
@@ -4226,12 +4376,12 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
         {/* Selector de cultivo (va antes de Mercado: el mercado depende del cultivo) */}
         <div className="um-ctrl">
-        <label className="control-label">Cultivo</label>
+        <label className="control-label">Sector</label>
         <select
           className="control-select"
           value={cultivoSeleccionado}
           onChange={(e) => handleCultivoChange(e.target.value)}
-          title="Selecciona un cultivo para análisis de aptitud"
+          title="Selecciona el sector (cultivo o producto) para el análisis"
         >
           {Object.keys(CULTIVOS).map((cultivo) => (
             <option key={cultivo} value={cultivo}>
@@ -4241,8 +4391,9 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         </select>
         </div>
 
-        {/* Selector de variable de mercado (datos de ejemplo), según el cultivo */}
-        <div className="um-ctrl">
+        {/* Selector de variable de mercado (datos de ejemplo), según el sector.
+            El panel se abre justo debajo del selector, donde está la vista. */}
+        <div className="um-ctrl um-ctrl-mercado">
         <label className="control-label">Mercado</label>
         <select
           className="control-select"
@@ -4260,6 +4411,13 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
             {mercadoCultivo.generales.map(renderOpcionMercado)}
           </optgroup>
         </select>
+        {mercadoVar && (
+          <MarketPanel
+            clave={mercadoVar}
+            role={currentUser?.role}
+            onClose={() => setMercadoVar('')}
+          />
+        )}
         </div>
 
         {/* Selector de fecha inicio */}
@@ -4288,15 +4446,8 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
 
       </div>
 
-      {/* Fila bajo la barra: panel de mercado (izq.) y banner de estado (centro) */}
+      {/* Fila bajo la barra: banner de estado (centro) */}
       <div className="um-top-row">
-        {mercadoVar && (
-          <MarketPanel
-            clave={mercadoVar}
-            role={currentUser?.role}
-            onClose={() => setMercadoVar('')}
-          />
-        )}
 
         {/* Banner de estado de datos: aparece al cambiar de variable o cuando
             los datos pasan de en vivo a históricos (o al revés), y se oculta
@@ -4386,6 +4537,20 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         </button>
         {leyendaActoresAbierta && (
           <>
+            <button
+              className="actores-legend-yo"
+              onClick={() => {
+                mapRef.current?.flyTo([miUbicacion.lat, miUbicacion.lng], 11);
+                setTimeout(() => miMarcadorRef.current?.openTooltip(), 900);
+              }}
+              title="Centrar el mapa en tu ubicación"
+            >
+              <span className="actores-legend-yo-dot" style={{ borderColor: ACTORES[currentUser?.role]?.color || '#23206f' }} />
+              <span>
+                <strong>Mi ubicación</strong>
+                <small>{miUbicacion.lugar}, {miUbicacion.municipio}</small>
+              </span>
+            </button>
             {Object.entries(ACTORES).map(([key, a]) => (
               <label key={key} className="actores-legend-item" title={a.descripcion}>
                 <input
@@ -4400,7 +4565,20 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                 </span>
               </label>
             ))}
-            <label className="actores-legend-item actores-legend-cauca">
+            <label className="actores-legend-item actores-legend-cauca" title="Derrumbes e inundaciones que afectan la movilidad">
+              <input
+                type="checkbox"
+                checked={mostrarVias}
+                onChange={() => setMostrarVias(!mostrarVias)}
+              />
+              <svg className="actores-legend-via" viewBox="0 0 24 22" width="18" height="16">
+                <path d="M12 1.5 L23 20.5 H1 Z" fill="#fff8e6" stroke="#d97706" strokeWidth="2" strokeLinejoin="round" />
+                <text x="12" y="17.5" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d97706">!</text>
+              </svg>
+              Estado de vías
+              <span className="actores-legend-count">{ALERTAS_VIAS.length}</span>
+            </label>
+            <label className="actores-legend-item">
               <input
                 type="checkbox"
                 checked={resaltarCauca}
@@ -4459,7 +4637,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
               className={`um-side-panel-tab ${activeModalTab === 'cultivos' ? 'active' : ''}`}
               onClick={() => setActiveModalTab('cultivos')}
             >
-              🌾 Cultivo
+              🌾 Sector
             </button>
           </div>
 
@@ -4654,7 +4832,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                 className={`um-modal-tab ${activeModalTab === 'cultivos' ? 'active' : ''}`}
                 onClick={() => setActiveModalTab('cultivos')}
               >
-                🌾 Análisis de Cultivos
+                🌾 Análisis del sector
               </button>
             </div>
 
@@ -4794,6 +4972,9 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                     <p className="crop-aptitud-description">{cropAnalysisData.recomendacion?.texto || 'No disponible'}</p>
                   </div>
 
+                  {/* Variables de mercado del sector */}
+                  <MarketSummary cultivo={cropAnalysisData.cultivo} />
+
                   {/* Detalles de Aptitud */}
                   <div className="crop-details-section">
                     <h5>📊 Detalles de Aptitud</h5>
@@ -4886,7 +5067,7 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
                   {/* Información del Cultivo */}
                   {CULTIVOS[cropAnalysisData.cultivo] && (
                     <div className="crop-info-section">
-                      <h5>📋 Información del Cultivo</h5>
+                      <h5>📋 Información del sector</h5>
                       <div className="crop-info-list">
                         <div className="crop-info-row">
                           <strong>Temp. Óptima:</strong>
@@ -4980,6 +5161,24 @@ const ClimateDashboard = forwardRef(({ currentUser }, ref) => {
         </div>,
         document.body // Renderizar en el body
       )}
+
+      {/* ========================================
+          BOTÓN DE ANIMACIÓN DE LA VARIABLE - ENCIMA DEL DE MAPA BASE
+          Activa o detiene la animación de colores que va sobre el mapa base.
+          ======================================== */}
+      <button
+        className={`map-anim-button ${animacionActiva ? 'activa' : ''}`}
+        onClick={() => cambiarAnimacion(!animacionActiva)}
+        title={animacionActiva ? `Detener la animación de ${activeVar}` : `Activar la animación de ${activeVar}`}
+        aria-pressed={animacionActiva}
+      >
+        {animacionActiva ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z" /></svg>
+        )}
+        <span className="map-anim-button-label">Animación</span>
+      </button>
 
       {/* ========================================
           BOTÓN DE MAPA BASE - JUNTO AL ZOOM

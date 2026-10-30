@@ -53,6 +53,27 @@ clave para no romper cuentas existentes), `comercializador`, `servicios`. Los ro
   al cambiar de pestaña el contenido aparece arriba. El PDF sigue incluyendo mapa y gráfica.
 - **Contraseñas:** botón de ojo para mostrar/ocultar en todos los campos
   (`components/PasswordInput.jsx`).
+- **Mi ubicación** (reunión del 29/10/2026): el usuario que inicia sesión aparece en el mapa con un
+  marcador propio (anillo que pulsa, etiqueta "Tú", color de su perfil). Al hacer clic muestra
+  nombre, lugar, municipio y coordenadas. La ubicación es **simulada** en el Cauca y siempre es la
+  misma para la misma cuenta (`config/ubicacionUsuario.js`). Botón "Mi ubicación" en la leyenda.
+- **Estado de vías:** 4 alertas simuladas (3 derrumbes y 1 inundación) con una señal de triángulo;
+  el nombre ("Derrumbe", "Vía cerrada") se lee al acercarse (zoom 10 o más). Se pueden ocultar
+  desde la leyenda (`config/estadoVias.js`).
+- **Cultivo → Sector:** en pantalla todo lo que decía "cultivo" dice "sector" (selector, pestañas,
+  PDF). Los nombres internos y la base de datos no cambian, para no romper registros ni el backend.
+- **Mercado junto al selector:** el panel de mercado se abre justo debajo del selector "Mercado".
+- **Mercado en el análisis:** en Mis registros → "Ver más", el recuadro de arriba muestra las
+  variables de mercado del sector en vez de promedio/máximo/mínimo (siguen en "Datos Climáticos"),
+  y la pestaña "Análisis del sector" trae tarjetas de mercado (`components/MarketSummary.jsx`).
+- **"Detalles Climáticos" → "Detalles del sector"** (pestaña del detalle del registro).
+- **Íconos de los títulos:** en el detalle del registro, los títulos con texto en degradado
+  pintaban de azul los emojis; ahora usan un azul sólido.
+- **Mapas base** (todos gratuitos y sin clave): OpenStreetMap, **Oscuro** (Esri Dark Gray
+  Canvas) y **Satélite detallado** (imagen de Esri con vías y nombres; hasta nivel 18 se ven
+  casas y techos, más cerca se amplía esa imagen). Se quitó Voyager. Zoom máximo del mapa: 20.
+- **Botón "Animación"** sobre el mapa (encima del botón de mapa base): activa o detiene la
+  animación de colores de la variable. El navegador recuerda la elección.
 - **Limpieza:** se eliminó un módulo sin uso que llamaba a un servicio externo de análisis
   (nunca estuvo conectado) junto con su documentación y estilos.
 

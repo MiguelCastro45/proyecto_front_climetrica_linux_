@@ -1,5 +1,5 @@
 /**
- * CropRecordForm.jsx — "Mis datos del cultivo": formulario para que el
+ * CropRecordForm.jsx — "Mis datos del sector": formulario para que el
  * usuario complemente un registro guardado con sus propios datos.
  *
  * - Los campos se ajustan al cultivo del registro (config/camposCultivo.js).
@@ -163,7 +163,7 @@ export default function CropRecordForm({ recordId, userId, cultivo }) {
     <div className="crf">
       <div className="crf-header">
         <div>
-          <h4>📝 Mis datos del cultivo{cultivo ? `: ${cultivo}` : ""}</h4>
+          <h4>📝 Mis datos del sector{cultivo ? `: ${cultivo}` : ""}</h4>
           <p className="crf-sub">
             Complementa este registro con tu información (árboles, área, producción, ventas, afectaciones).
           </p>
